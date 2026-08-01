@@ -1,0 +1,682 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechStore Nepal | Electronics & Accessories</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .active-tab { border-bottom: 2px solid #2563eb; color: #2563eb; }
+        .modal { transition: opacity 0.25s ease; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+
+    <!-- NAVBAR -->
+    <nav class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="showView('store')">
+                <i class="fa-solid fa-bolt text-blue-600 text-2xl"></i>
+                <span class="text-xl font-bold tracking-tight text-gray-900">TechStore<span class="text-blue-600">NP</span></span>
+            </div>
+
+            <div class="hidden md:flex items-center gap-6 text-sm font-medium">
+                <button onclick="filterCategory('all')" class="hover:text-blue-600">All Products</button>
+                <button onclick="filterCategory('mobile-accessories')" class="hover:text-blue-600">Mobile Accessories</button>
+                <button onclick="filterCategory('smartwatch')" class="hover:text-blue-600">Smartwatches</button>
+                <button onclick="filterCategory('earbuds')" class="hover:text-blue-600">Earbuds</button>
+                <button onclick="filterCategory('earphones')" class="hover:text-blue-600">Earphones</button>
+                <button onclick="filterCategory('power-banks')" class="hover:text-blue-600">Power Banks</button>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <button onclick="openAdminAuth()" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md font-semibold text-gray-700">
+                    <i class="fa-solid fa-user-shield mr-1"></i> Admin Portal
+                </button>
+
+                <div class="relative cursor-pointer" onclick="openCart()">
+                    <i class="fa-solid fa-cart-shopping text-xl text-gray-700"></i>
+                    <span id="cart-badge" class="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">0</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN VIEW: STORE FRONT -->
+    <main id="view-store" class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Hero Banner -->
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 mb-8 text-white shadow-lg flex flex-col md:flex-row items-center justify-between">
+            <div class="space-y-3 max-w-lg">
+                <span class="bg-blue-500 text-xs px-3 py-1 rounded-full uppercase tracking-wider font-semibold">Nepal Express Delivery</span>
+                <h1 class="text-3xl md:text-4xl font-extrabold leading-tight">Next-Gen Tech Gear Delivered Anywhere in Nepal</h1>
+                <p class="text-blue-100 text-sm">Top tier Smartwatches, Earbuds, and Power Banks with customizable province rates.</p>
+            </div>
+            <div class="mt-6 md:mt-0">
+                <div class="bg-white/10 backdrop-blur-md p-6 rounded-xl border border-white/20 text-center">
+                    <i class="fa-solid fa-truck-fast text-4xl mb-2"></i>
+                    <p class="text-xs text-blue-100" id="hero-rate-summary">Biratnagar: NPR 100 | Other Cities: NPR 150</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="flex overflow-x-auto gap-2 pb-4 mb-6 text-sm font-medium no-scrollbar">
+            <button onclick="filterCategory('all')" class="cat-pill bg-blue-600 text-white px-4 py-2 rounded-full whitespace-nowrap">All Items</button>
+            <button onclick="filterCategory('mobile-accessories')" class="cat-pill bg-white text-gray-600 border px-4 py-2 rounded-full whitespace-nowrap">Mobile Accessories</button>
+            <button onclick="filterCategory('smartwatch')" class="cat-pill bg-white text-gray-600 border px-4 py-2 rounded-full whitespace-nowrap">Smartwatches</button>
+            <button onclick="filterCategory('earbuds')" class="cat-pill bg-white text-gray-600 border px-4 py-2 rounded-full whitespace-nowrap">Earbuds</button>
+            <button onclick="filterCategory('earphones')" class="cat-pill bg-white text-gray-600 border px-4 py-2 rounded-full whitespace-nowrap">Earphones</button>
+            <button onclick="filterCategory('power-banks')" class="cat-pill bg-white text-gray-600 border px-4 py-2 rounded-full whitespace-nowrap">Power Banks</button>
+        </div>
+
+        <!-- Product Grid -->
+        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <!-- Dynamically populated -->
+        </div>
+    </main>
+
+    <!-- MAIN VIEW: ADMIN DASHBOARD -->
+    <main id="view-admin" class="max-w-7xl mx-auto px-4 py-8 hidden">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Admin Operations Dashboard</h1>
+                <p class="text-sm text-gray-500">Manage catalog items, view orders, update admin password, and adjust delivery rates.</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="handleAdminLogout()" class="text-sm bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg font-medium">Logout</button>
+                <button onclick="showView('store')" class="text-sm bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg">Back to Store</button>
+            </div>
+        </div>
+
+        <!-- Admin Tabs -->
+        <div class="flex gap-2 mb-6 border-b text-sm font-semibold">
+            <button id="admin-tab-orders" onclick="switchAdminTab('orders')" class="px-4 py-2 active-tab">Orders</button>
+            <button id="admin-tab-catalog" onclick="switchAdminTab('catalog')" class="px-4 py-2 text-gray-500">Catalog</button>
+            <button id="admin-tab-delivery" onclick="switchAdminTab('delivery')" class="px-4 py-2 text-gray-500">Delivery Rates</button>
+            <button id="admin-tab-account" onclick="switchAdminTab('account')" class="px-4 py-2 text-gray-500">Admin Account</button>
+        </div>
+
+        <!-- ORDERS PANEL -->
+        <div id="admin-panel-orders" class="space-y-4">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-receipt text-blue-600"></i> Incoming Orders</h2>
+                    <span class="text-xs text-gray-400" id="orders-count-label">0 orders</span>
+                </div>
+                <div id="orders-list" class="space-y-3">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- CATALOG PANEL -->
+        <div id="admin-panel-catalog" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-fit">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-plus text-blue-600"></i> Add New Product</h2>
+                <form id="add-product-form" onsubmit="handleAddProduct(event)" class="space-y-4">
+                    <div>
+                        <label class="text-xs font-semibold text-gray-600 block mb-1">Product Title</label>
+                        <input type="text" id="p-title" required placeholder="e.g. Anker 20,000mAh Power Bank" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-600 block mb-1">Category</label>
+                        <select id="p-category" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                            <option value="mobile-accessories">Mobile Accessories</option>
+                            <option value="smartwatch">Smartwatch</option>
+                            <option value="earbuds">Earbuds</option>
+                            <option value="earphones">Earphones</option>
+                            <option value="power-banks">Power Banks</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-600 block mb-1">Price (NPR)</label>
+                        <input type="number" id="p-price" required placeholder="2500" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-600 block mb-1">Image URL</label>
+                        <input type="url" id="p-image" placeholder="https://..." class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white font-medium py-2.5 rounded-lg text-sm hover:bg-blue-700">Save Product</button>
+                </form>
+            </div>
+
+            <div class="lg:col-span-2">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <h2 class="text-lg font-bold mb-4">Active Catalog Items</h2>
+                    <div id="admin-product-list" class="space-y-3 max-h-[32rem] overflow-y-auto">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DELIVERY PANEL -->
+        <div id="admin-panel-delivery" class="hidden">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-truck-ram text-blue-600"></i> Delivery Rates Management</h2>
+                    <button onclick="addDeliveryLocation()" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-md font-semibold hover:bg-blue-700"><i class="fa-solid fa-plus mr-1"></i>Add Location</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-gray-50 text-gray-600 text-xs uppercase">
+                            <tr>
+                                <th class="p-3">Location / City</th>
+                                <th class="p-3">Province</th>
+                                <th class="p-3">Charge (NPR)</th>
+                                <th class="p-3 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="delivery-rate-table" class="divide-y">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACCOUNT PANEL -->
+        <div id="admin-panel-account" class="hidden">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 max-w-md">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-key text-blue-600"></i> Update Admin Account</h2>
+                <form onsubmit="handleUpdateAdminCredentials(event)" class="space-y-4">
+                    <div>
+                        <label class="text-xs font-semibold text-gray-600 block mb-1">Username</label>
+                        <input type="text" id="admin-user-field" required class="w-full border rounded-lg p-2.5 text-sm outline-none bg-gray-50">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-600 block mb-1">New Password</label>
+                        <input type="password" id="admin-pass-field" required class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                    </div>
+                    <button type="submit" class="w-full bg-gray-900 text-white font-medium py-2.5 rounded-lg text-sm hover:bg-gray-800">Update Credentials</button>
+                </form>
+                <p class="text-xs text-gray-400 mt-3">Note: this demo store keeps credentials in the page's memory only — they reset if the page is reloaded. Wire up a real backend before going live.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- CART & CHECKOUT SLIDE-OVER (z-50) -->
+    <div id="cart-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex justify-end">
+        <div class="bg-white w-full max-w-md h-full flex flex-col justify-between p-6 shadow-2xl overflow-y-auto">
+            <div>
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-bag-shopping text-blue-600"></i> Your Shopping Cart</h2>
+                    <button onclick="closeCart()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+
+                <div id="cart-items" class="space-y-4 divide-y">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <div class="border-t pt-4 mt-6 space-y-4">
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-xs font-semibold text-gray-600 block mb-1">Full Name</label>
+                        <input type="text" id="checkout-name" placeholder="Your full name" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-600 block mb-1">Phone Number</label>
+                        <input type="tel" id="checkout-phone" placeholder="98XXXXXXXX" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-600 block mb-1">Delivery Address</label>
+                        <input type="text" id="checkout-address" placeholder="Street, ward, landmark" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-600 block mb-1">Delivery Destination (Nepal)</label>
+                        <select id="checkout-location" onchange="updateCartTotals()" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                            <!-- Populated dynamically based on admin state -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="space-y-1 text-sm">
+                    <div class="flex justify-between text-gray-500"><span>Subtotal</span><span id="summary-subtotal">NPR 0</span></div>
+                    <div class="flex justify-between text-gray-500"><span>Delivery Charge</span><span id="summary-delivery">NPR 0</span></div>
+                    <div class="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t"><span>Total</span><span id="summary-total">NPR 0</span></div>
+                </div>
+
+                <button onclick="handleCheckout()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg">
+                    <i class="fa-solid fa-lock text-sm"></i> Place Order
+                </button>
+                <p class="text-[11px] text-gray-400 text-center">Order details are sent to the store owner. Payment (eSewa / Khalti) is confirmed manually by the admin.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN LOGIN MODAL (z-[60]) -->
+    <div id="admin-auth-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-[60] p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl relative">
+            <button onclick="closeAdminAuth()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h2 class="text-xl font-bold text-gray-900 mb-1">Admin Verification</h2>
+            <p class="text-sm text-gray-500 mb-6">Enter official admin credentials to enter panel</p>
+
+            <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+                <div>
+                    <label class="text-xs font-semibold text-gray-600 block mb-1">Username</label>
+                    <input type="text" id="admin-input-user" required placeholder="admin" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-gray-600 block mb-1">Password</label>
+                    <input type="password" id="admin-input-pass" required placeholder="••••••••" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg text-sm">
+                    Access Dashboard
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ADMIN CREDENTIALS CONFIG
+        const ADMIN_CONFIG = {
+            username: "ayushacharya",
+            password: "Ayush@2059"
+        };
+
+        // Where order notifications go (opens the admin's email client with order details prefilled,
+        // since this page has no backend/server to send email automatically)
+        const ORDER_NOTIFY_EMAIL = "ayushacharya506@gmail.com";
+
+        let deliveryRates = [
+            { key: 'biratnagar', city: 'Biratnagar', province: 'Koshi', charge: 100 },
+            { key: 'kathmandu', city: 'Kathmandu', province: 'Bagmati', charge: 150 },
+            { key: 'dharan', city: 'Dharan', province: 'Koshi', charge: 150 },
+            { key: 'itahari', city: 'Itahari', province: 'Koshi', charge: 150 },
+            { key: 'pokhara', city: 'Pokhara', province: 'Gandaki', charge: 150 },
+            { key: 'other', city: 'Other Nepal Locations', province: 'Nationwide', charge: 150 }
+        ];
+
+        let products = [
+            { id: 1, title: 'MagSafe Wireless Charger 15W', category: 'mobile-accessories', price: 1800, image: 'https://images.unsplash.com/photo-1622445268465-8438118593da?auto=format&fit=crop&w=400&q=80' },
+            { id: 2, title: 'AMOLED Calling Smartwatch v2', category: 'smartwatch', price: 4500, image: 'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?auto=format&fit=crop&w=400&q=80' },
+            { id: 3, title: 'Active Noise Cancelling Earbuds', category: 'earbuds', price: 3200, image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=400&q=80' },
+            { id: 4, title: 'Braided Type-C Fast Cable', category: 'mobile-accessories', price: 450, image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=400&q=80' },
+            { id: 5, title: 'Extra Bass In-Ear Earphones', category: 'earphones', price: 850, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80' },
+            { id: 6, title: '20,000mAh 22.5W Power Bank', category: 'power-banks', price: 2900, image: 'https://images.unsplash.com/photo-1609592807982-14b301c238b9?auto=format&fit=crop&w=400&q=80' }
+        ];
+
+        let cart = [];
+        let orders = [];
+        let isAdminLoggedIn = false;
+
+        // INITIALIZATION
+        window.addEventListener('DOMContentLoaded', () => {
+            renderProducts(products);
+            renderAdminDeliveryRates();
+            renderAdminProducts();
+            populateLocationOptions();
+            renderOrders();
+        });
+
+        // VIEW NAVIGATION
+        function showView(view) {
+            if (view === 'admin' && !isAdminLoggedIn) {
+                openAdminAuth();
+                return;
+            }
+            document.getElementById('view-store').classList.toggle('hidden', view !== 'store');
+            document.getElementById('view-admin').classList.toggle('hidden', view !== 'admin');
+        }
+
+        function switchAdminTab(tab) {
+            ['orders', 'catalog', 'delivery', 'account'].forEach(t => {
+                document.getElementById(`admin-panel-${t}`).classList.toggle('hidden', t !== tab);
+                document.getElementById(`admin-tab-${t}`).classList.toggle('active-tab', t === tab);
+                document.getElementById(`admin-tab-${t}`).classList.toggle('text-gray-500', t !== tab);
+            });
+        }
+
+        // ADMIN AUTHENTICATION
+        function openAdminAuth() {
+            if (isAdminLoggedIn) {
+                showView('admin');
+                return;
+            }
+            document.getElementById('admin-auth-modal').classList.remove('hidden');
+            document.getElementById('admin-auth-modal').classList.add('flex');
+        }
+
+        function closeAdminAuth() {
+            document.getElementById('admin-auth-modal').classList.add('hidden');
+            document.getElementById('admin-auth-modal').classList.remove('flex');
+        }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const userInput = document.getElementById('admin-input-user').value.trim();
+            const passInput = document.getElementById('admin-input-pass').value.trim();
+
+            if (userInput === ADMIN_CONFIG.username && passInput === ADMIN_CONFIG.password) {
+                isAdminLoggedIn = true;
+                closeAdminAuth();
+                document.getElementById('admin-user-field').value = ADMIN_CONFIG.username;
+                document.getElementById('admin-pass-field').value = '';
+                switchAdminTab('orders');
+                showView('admin');
+            } else {
+                alert('Invalid Admin Credentials. Please check username and password.');
+            }
+        }
+
+        function handleAdminLogout() {
+            isAdminLoggedIn = false;
+            showView('store');
+        }
+
+        function handleUpdateAdminCredentials(e) {
+            e.preventDefault();
+            const newUser = document.getElementById('admin-user-field').value.trim();
+            const newPass = document.getElementById('admin-pass-field').value;
+            ADMIN_CONFIG.username = newUser;
+            ADMIN_CONFIG.password = newPass;
+            alert(`Admin credentials updated. Username: "${newUser}"`);
+            document.getElementById('admin-pass-field').value = '';
+        }
+
+        // PRODUCTS RENDER (storefront)
+        function renderProducts(items) {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = items.map(p => `
+                <div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition border border-gray-100 flex flex-col justify-between">
+                    <div>
+                        <div class="h-48 bg-gray-100 relative overflow-hidden">
+                            <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover">
+                            <span class="absolute top-2 left-2 bg-gray-900/70 text-white text-[10px] px-2 py-0.5 rounded uppercase font-semibold tracking-wider">${p.category.replace('-', ' ')}</span>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-bold text-gray-900 text-sm line-clamp-2 mb-1">${p.title}</h3>
+                            <p class="text-blue-600 font-extrabold text-base">NPR ${p.price.toLocaleString()}</p>
+                        </div>
+                    </div>
+                    <div class="p-4 pt-0">
+                        <button onclick="addToCart(${p.id})" class="w-full bg-gray-900 hover:bg-blue-600 text-white text-xs font-semibold py-2.5 rounded-lg transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-cart-plus"></i> Add to Cart
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterCategory(cat) {
+            if (cat === 'all') {
+                renderProducts(products);
+            } else {
+                renderProducts(products.filter(p => p.category === cat));
+            }
+        }
+
+        // CART & CHECKOUT MANAGEMENT
+        function populateLocationOptions() {
+            const select = document.getElementById('checkout-location');
+            const prevValue = select.value;
+            select.innerHTML = deliveryRates.map(r => `
+                <option value="${r.key}">${r.city} (NPR ${r.charge})</option>
+            `).join('');
+            if (deliveryRates.some(r => r.key === prevValue)) select.value = prevValue;
+        }
+
+        function addToCart(id) {
+            const item = products.find(p => p.id === id);
+            const existing = cart.find(c => c.id === id);
+            if (existing) {
+                existing.qty++;
+            } else {
+                cart.push({ ...item, qty: 1 });
+            }
+            updateCartTotals();
+            openCart();
+        }
+
+        function updateCartQty(id, delta) {
+            const item = cart.find(c => c.id === id);
+            if (!item) return;
+            item.qty += delta;
+            if (item.qty <= 0) {
+                cart = cart.filter(c => c.id !== id);
+            }
+            updateCartTotals();
+        }
+
+        function updateCartTotals() {
+            const badge = document.getElementById('cart-badge');
+            const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+            badge.innerText = totalQty;
+
+            const cartContainer = document.getElementById('cart-items');
+            if (cart.length === 0) {
+                cartContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-8">Your cart is currently empty.</p>`;
+            } else {
+                cartContainer.innerHTML = cart.map(item => `
+                    <div class="flex items-center justify-between pt-3">
+                        <div class="flex items-center gap-3">
+                            <img src="${item.image}" class="w-12 h-12 rounded object-cover">
+                            <div>
+                                <h4 class="text-xs font-bold text-gray-800 line-clamp-1">${item.title}</h4>
+                                <p class="text-xs text-blue-600 font-semibold">NPR ${item.price}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 border rounded-lg px-2 py-1 text-xs">
+                            <button onclick="updateCartQty(${item.id}, -1)" class="text-gray-500 font-bold px-1">-</button>
+                            <span class="font-semibold">${item.qty}</span>
+                            <button onclick="updateCartQty(${item.id}, 1)" class="text-gray-500 font-bold px-1">+</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            const selectedKey = document.getElementById('checkout-location').value;
+            const targetRate = deliveryRates.find(r => r.key === selectedKey) || deliveryRates[0];
+            const deliveryCharge = targetRate ? targetRate.charge : 150;
+
+            document.getElementById('summary-subtotal').innerText = `NPR ${subtotal.toLocaleString()}`;
+            document.getElementById('summary-delivery').innerText = `NPR ${deliveryCharge}`;
+            document.getElementById('summary-total').innerText = `NPR ${(subtotal + (cart.length ? deliveryCharge : 0)).toLocaleString()}`;
+        }
+
+        function openCart() { document.getElementById('cart-modal').classList.remove('hidden'); }
+        function closeCart() { document.getElementById('cart-modal').classList.add('hidden'); }
+
+        function handleCheckout() {
+            if (cart.length === 0) {
+                alert('Add items to your cart before proceeding.');
+                return;
+            }
+            const name = document.getElementById('checkout-name').value.trim();
+            const phone = document.getElementById('checkout-phone').value.trim();
+            const address = document.getElementById('checkout-address').value.trim();
+            if (!name || !phone || !address) {
+                alert('Please fill in your name, phone number, and delivery address.');
+                return;
+            }
+
+            const locationKey = document.getElementById('checkout-location').value;
+            const rate = deliveryRates.find(r => r.key === locationKey) || deliveryRates[0];
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            const total = subtotal + rate.charge;
+
+            const order = {
+                id: 'ORD' + Date.now(),
+                date: new Date().toLocaleString(),
+                name, phone, address,
+                location: rate.city,
+                items: cart.map(c => ({ title: c.title, qty: c.qty, price: c.price })),
+                subtotal, deliveryCharge: rate.charge, total,
+                status: 'New'
+            };
+            orders.unshift(order);
+            renderOrders();
+
+            // No backend is connected, so we hand the order to the store owner via a
+            // pre-filled email draft instead of silently "sending" it.
+            const itemLines = order.items.map(i => `- ${i.title} x${i.qty} (NPR ${i.price} each)`).join('%0D%0A');
+            const subject = encodeURIComponent(`New Order ${order.id} - ${order.name}`);
+            const body = `New order from TechStore NP website%0D%0A%0D%0AOrder ID: ${order.id}%0D%0ADate: ${order.date}%0D%0A%0D%0ACustomer: ${order.name}%0D%0APhone: ${order.phone}%0D%0AAddress: ${order.address}%0D%0ADelivery Location: ${order.location}%0D%0A%0D%0AItems:%0D%0A${itemLines}%0D%0A%0D%0ASubtotal: NPR ${order.subtotal}%0D%0ADelivery: NPR ${order.deliveryCharge}%0D%0ATotal: NPR ${order.total}%0D%0A%0D%0APayment: to be confirmed via eSewa / Khalti with the customer.`;
+            const mailtoLink = `mailto:${ORDER_NOTIFY_EMAIL}?subject=${subject}&body=${body}`;
+
+            cart = [];
+            document.getElementById('checkout-name').value = '';
+            document.getElementById('checkout-phone').value = '';
+            document.getElementById('checkout-address').value = '';
+            updateCartTotals();
+            closeCart();
+
+            alert(`Order ${order.id} placed! It now shows up in the admin dashboard. We'll also open an email draft to ${ORDER_NOTIFY_EMAIL} — please hit send so the order reaches the inbox.`);
+            window.location.href = mailtoLink;
+        }
+
+        // ADMIN: ORDERS
+        function renderOrders() {
+            const list = document.getElementById('orders-list');
+            document.getElementById('orders-count-label').innerText = `${orders.length} order${orders.length === 1 ? '' : 's'}`;
+            if (orders.length === 0) {
+                list.innerHTML = `<p class="text-sm text-gray-400 text-center py-8">No orders yet.</p>`;
+                return;
+            }
+            list.innerHTML = orders.map(o => `
+                <div class="border rounded-lg p-4">
+                    <div class="flex flex-wrap justify-between items-start gap-2 mb-2">
+                        <div>
+                            <p class="font-bold text-sm text-gray-900">${o.id} <span class="text-xs font-normal text-gray-400">• ${o.date}</span></p>
+                            <p class="text-xs text-gray-500">${o.name} • ${o.phone}</p>
+                            <p class="text-xs text-gray-500">${o.address} (${o.location})</p>
+                        </div>
+                        <select onchange="updateOrderStatus('${o.id}', this.value)" class="text-xs border rounded-md px-2 py-1 font-semibold ${o.status === 'New' ? 'text-blue-600' : o.status === 'Delivered' ? 'text-green-600' : 'text-gray-600'}">
+                            ${['New','Confirmed','Shipped','Delivered','Cancelled'].map(s => `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="text-xs text-gray-600 space-y-0.5 mb-2">
+                        ${o.items.map(i => `<div>${i.title} x${i.qty} — NPR ${i.price * i.qty}</div>`).join('')}
+                    </div>
+                    <div class="flex justify-between items-center text-sm pt-2 border-t">
+                        <span class="text-gray-500">Subtotal NPR ${o.subtotal} + Delivery NPR ${o.deliveryCharge}</span>
+                        <span class="font-bold text-blue-600">Total NPR ${o.total}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateOrderStatus(orderId, status) {
+            const o = orders.find(x => x.id === orderId);
+            if (o) o.status = status;
+            renderOrders();
+        }
+
+        // ADMIN: PRODUCT CRUD
+        function renderAdminProducts() {
+            const list = document.getElementById('admin-product-list');
+            list.innerHTML = products.map(p => `
+                <div class="flex items-center justify-between p-3 border rounded-lg bg-gray-50 text-xs">
+                    <div class="flex items-center gap-3">
+                        <img src="${p.image}" class="w-10 h-10 rounded object-cover">
+                        <div>
+                            <p class="font-bold text-gray-800">${p.title}</p>
+                            <span class="text-gray-500 uppercase">${p.category} • NPR ${p.price}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="editProduct(${p.id})" class="text-blue-600 hover:underline font-semibold">Edit</button>
+                        <button onclick="deleteProduct(${p.id})" class="text-red-500 hover:underline font-semibold">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function handleAddProduct(e) {
+            e.preventDefault();
+            const title = document.getElementById('p-title').value;
+            const category = document.getElementById('p-category').value;
+            const price = parseFloat(document.getElementById('p-price').value);
+            const image = document.getElementById('p-image').value || 'https://via.placeholder.com/300';
+
+            const newProd = { id: Date.now(), title, category, price, image };
+            products.unshift(newProd);
+
+            renderProducts(products);
+            renderAdminProducts();
+            document.getElementById('add-product-form').reset();
+            alert('New product added successfully!');
+        }
+
+        function editProduct(id) {
+            const p = products.find(x => x.id === id);
+            if (!p) return;
+            const newTitle = prompt('Product title:', p.title);
+            if (newTitle === null) return;
+            const newPrice = prompt('Price (NPR):', p.price);
+            if (newPrice === null || isNaN(newPrice) || newPrice === '') return;
+            const newImage = prompt('Image URL:', p.image);
+            if (newImage === null) return;
+
+            p.title = newTitle;
+            p.price = parseFloat(newPrice);
+            p.image = newImage;
+
+            renderProducts(products);
+            renderAdminProducts();
+        }
+
+        function deleteProduct(id) {
+            const p = products.find(x => x.id === id);
+            if (!p) return;
+            if (!confirm(`Delete "${p.title}" from the catalog?`)) return;
+            products = products.filter(x => x.id !== id);
+            renderProducts(products);
+            renderAdminProducts();
+        }
+
+        // ADMIN: DELIVERY RATES
+        function renderAdminDeliveryRates() {
+            const tbody = document.getElementById('delivery-rate-table');
+            tbody.innerHTML = deliveryRates.map((r, index) => `
+                <tr class="hover:bg-gray-50">
+                    <td class="p-3 font-semibold text-gray-800">${r.city}</td>
+                    <td class="p-3 text-gray-500">${r.province}</td>
+                    <td class="p-3 font-bold text-blue-600">NPR ${r.charge}</td>
+                    <td class="p-3 text-right space-x-3">
+                        <button onclick="updateRatePrompt(${index})" class="text-xs text-blue-600 hover:underline font-semibold">Change Charge</button>
+                        <button onclick="deleteDeliveryLocation(${index})" class="text-xs text-red-500 hover:underline font-semibold">Remove</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateRatePrompt(index) {
+            const newCharge = prompt(`Enter new delivery charge (NPR) for ${deliveryRates[index].city}:`, deliveryRates[index].charge);
+            if (newCharge !== null && !isNaN(newCharge) && newCharge !== '') {
+                deliveryRates[index].charge = parseFloat(newCharge);
+                renderAdminDeliveryRates();
+                populateLocationOptions();
+                updateCartTotals();
+            }
+        }
+
+        function addDeliveryLocation() {
+            const city = prompt('City / location name:');
+            if (!city) return;
+            const province = prompt('Province:', '') || '';
+            const charge = prompt('Delivery charge (NPR):', '150');
+            if (charge === null || isNaN(charge) || charge === '') return;
+            deliveryRates.push({ key: city.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now(), city, province, charge: parseFloat(charge) });
+            renderAdminDeliveryRates();
+            populateLocationOptions();
+        }
+
+        function deleteDeliveryLocation(index) {
+            if (deliveryRates.length <= 1) {
+                alert('At least one delivery location must remain.');
+                return;
+            }
+            if (!confirm(`Remove "${deliveryRates[index].city}" from delivery locations?`)) return;
+            deliveryRates.splice(index, 1);
+            renderAdminDeliveryRates();
+            populateLocationOptions();
+            updateCartTotals();
+        }
+    </script>
+</body>
+</html>
