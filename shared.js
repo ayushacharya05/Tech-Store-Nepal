@@ -1,182 +1,171 @@
-// ==========================================
-// SUPABASE INITIALIZATION
-// ==========================================
-const SUPABASE_URL = 'https://ezpskmkjkwrvqvhwljgs.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_Wdmy1zuWKkXE3GpFdo1CNA_vEDRSgUH';
+/* shared.js - Supabase Initialization & Data Bridge */
 
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_URL = "https://ezpskmkjkwrvqvhwljgs.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_Wdmy1zuWKkXE3GpFdo1CNA_vEDRSgUH";
 
-// State Variables
-let cart = JSON.parse(localStorage.getItem('techstore_cart')) || [];
-let isSignUpMode = false;
+// Initialize Supabase Client
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ==========================================
-// AUTHENTICATION LOGIC (Email & Password)
-// ==========================================
-
-function openAuthModal() {
-  document.getElementById('authModal').classList.remove('hidden');
-}
-
-function closeAuthModal() {
-  document.getElementById('authModal').classList.add('hidden');
-}
-
-function toggleAuthMode(e) {
-  if (e) e.preventDefault();
-  isSignUpMode = !isSignUpMode;
-
-  const title = document.getElementById('authTitle');
-  const submitBtn = document.getElementById('authSubmitBtn');
-  const toggleText = document.getElementById('authToggleText');
-  const toggleLink = document.getElementById('authToggleLink');
-
-  if (isSignUpMode) {
-    title.innerText = "Create Account";
-    submitBtn.innerText = "Sign Up";
-    toggleText.innerText = "Already have an account?";
-    toggleLink.innerText = "Sign In";
-  } else {
-    title.innerText = "Sign In";
-    submitBtn.innerText = "Sign In";
-    toggleText.innerText = "Don't have an account?";
-    toggleLink.innerText = "Sign Up";
-  }
-}
-
-async function handleAuthSubmit(event) {
-  event.preventDefault();
-
-  const email = document.getElementById('authEmail').value.trim();
-  const password = document.getElementById('authPassword').value;
-
-  if (!email || !password) {
-    alert("Please enter both email and password.");
-    return;
-  }
-
-  try {
-    if (isSignUpMode) {
-      const { data, error } = await supabaseClient.auth.signUp({
-        email: email,
-        password: password,
-      });
-      if (error) throw error;
-      alert("Registration successful! You can now log in.");
-      toggleAuthMode();
-    } else {
-      const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email: email,
-        password: password,
-      });
-      if (error) throw error;
-      alert("Logged in successfully!");
-      closeAuthModal();
-      checkUserSession();
+// Default Seed Data
+const DEFAULT_PRODUCTS = [
+    {
+        id: "p1",
+        title: "Ultima Wave 300 Bluetooth Neckband with Fast Charge",
+        category: "earbuds",
+        brand: "Ultima",
+        price: 1899,
+        oldPrice: 2499,
+        image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=500&auto=format&fit=crop&q=60",
+        badge: "delivery",
+        badgeText: "Fast Delivery",
+        rating: 4.5,
+        sold: "1.2k",
+        reviews: 142,
+        description: "Experience high-fidelity wireless sound with ultra-low latency mode for gaming and fast charging capability.",
+        bullets: ["Up to 30 Hours Playtime", "Environmental Noise Cancellation (ENC)", "IPX5 Sweat & Water Resistance", "10-min charge gives 10 hours playtime"]
+    },
+    {
+        id: "p2",
+        title: "Oraimo Watch ER 1.43'' AMOLED Display Smartwatch",
+        category: "smartwatches",
+        brand: "Oraimo",
+        price: 4599,
+        oldPrice: 5999,
+        image: "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=500&auto=format&fit=crop&q=60",
+        badge: "gems",
+        badgeText: "Best Seller",
+        rating: 4.8,
+        sold: "850",
+        reviews: 98,
+        description: "Premium smartwatch featuring a vibrant AMOLED display, Bluetooth calling, and comprehensive health tracking.",
+        bullets: ["1.43-inch HD AMOLED Display", "Bluetooth Calling & Message Sync", "100+ Sports Modes", "SpO2 & Heart Rate Monitoring"]
+    },
+    {
+        id: "p3",
+        title: "Anker PowerBank 20000mAh 22.5W Fast Charging",
+        category: "powerbanks",
+        brand: "Anker",
+        price: 3299,
+        oldPrice: 3999,
+        image: "https://images.unsplash.com/photo-1609592424109-dd9892f1b177?w=500&auto=format&fit=crop&q=60",
+        badge: "delivery",
+        badgeText: "Fast Delivery",
+        rating: 4.7,
+        sold: "2.1k",
+        reviews: 310,
+        description: "High-capacity power bank equipped with 22.5W fast output to keep all your devices charged on the go.",
+        bullets: ["20,000mAh High Capacity", "22.5W Power Delivery", "Triple Output Ports", "Advanced Temperature Control"]
     }
-  } catch (err) {
-    console.error("Auth error:", err);
-    alert(err.message || "Authentication failed.");
-  }
-}
+];
 
-async function checkUserSession() {
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  const userBtn = document.getElementById('userAuthBtn');
+const DEFAULT_CATEGORIES = [
+    { key: "smartwatches", label: "Smart Watches" },
+    { key: "earbuds", label: "Earbuds & Audio" },
+    { key: "powerbanks", label: "Power Banks" }
+];
 
-  if (userBtn) {
-    if (session) {
-      userBtn.innerText = session.user.email.split('@')[0];
-      userBtn.onclick = () => {
-        if (confirm("Do you want to log out?")) {
-          supabaseClient.auth.signOut().then(() => location.reload());
+const DEFAULT_DELIVERY = [
+    { key: "biratnagar", city: "Biratnagar", charge: 100 },
+    { key: "outside", city: "Other Cities (Nepal)", charge: 150 }
+];
+
+/* ===================================================
+   DATABASE SEEDING (Auto-runs if tables are empty)
+=================================================== */
+async function ensureSeeded() {
+    try {
+        const { data: prods } = await supabase.from('products').select('id').limit(1);
+        if (!prods || prods.length === 0) {
+            await supabase.from('products').insert(DEFAULT_PRODUCTS);
         }
-      };
-    } else {
-      userBtn.innerText = "Account";
-      userBtn.onclick = openAuthModal;
+
+        const { data: cats } = await supabase.from('categories').select('key').limit(1);
+        if (!cats || cats.length === 0) {
+            await supabase.from('categories').insert(DEFAULT_CATEGORIES);
+        }
+
+        const { data: deliv } = await supabase.from('delivery_rates').select('key').limit(1);
+        if (!deliv || deliv.length === 0) {
+            await supabase.from('delivery_rates').insert(DEFAULT_DELIVERY);
+        }
+    } catch (err) {
+        console.warn("Seeding check skipped or table pending setup:", err);
     }
-  }
 }
 
-// ==========================================
-// CART FUNCTIONS
-// ==========================================
+/* ===================================================
+   REAL-TIME SUBSCRIPTIONS & FETCHERS
+=================================================== */
+function subscribeProducts(callback) {
+    // Initial Fetch
+    supabase.from('products').select('*').then(({ data, error }) => {
+        if (!error && data) callback(data);
+    });
 
-function updateCartUI() {
-  const cartCountEl = document.getElementById('cartCount');
-  const cartItemsEl = document.getElementById('cartItems');
-  const cartTotalEl = document.getElementById('cartTotal');
-
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-  if (cartCountEl) cartCountEl.innerText = totalItems;
-  if (cartTotalEl) cartTotalEl.innerText = `Rs. ${totalPrice.toLocaleString()}`;
-
-  if (cartItemsEl) {
-    if (cart.length === 0) {
-      cartItemsEl.innerHTML = `<p class="empty-cart">Your cart is empty.</p>`;
-    } else {
-      cartItemsEl.innerHTML = cart.map((item, index) => `
-        <div class="cart-item">
-          <img src="${item.image || 'https://via.placeholder.com/60'}" alt="${item.title}" />
-          <div class="cart-item-details">
-            <h4>${item.title}</h4>
-            <p>Rs. ${item.price.toLocaleString()} x ${item.quantity}</p>
-          </div>
-          <button onclick="removeFromCart(${index})" class="remove-btn">&times;</button>
-        </div>
-      `).join('');
-    }
-  }
-
-  localStorage.setItem('techstore_cart', JSON.stringify(cart));
+    // Real-time listener
+    return supabase.channel('public:products')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, async () => {
+            const { data } = await supabase.from('products').select('*');
+            if (data) callback(data);
+        })
+        .subscribe();
 }
 
-function addToCart(product) {
-  const existing = cart.find(item => item.id === product.id);
-  if (existing) {
-    existing.quantity += 1;
-  } else {
-    cart.push({ ...product, quantity: 1 });
-  }
-  updateCartUI();
-  openCartDrawer();
+function subscribeCategories(callback) {
+    supabase.from('categories').select('*').then(({ data, error }) => {
+        if (!error && data) callback(data);
+    });
+
+    return supabase.channel('public:categories')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, async () => {
+            const { data } = await supabase.from('categories').select('*');
+            if (data) callback(data);
+        })
+        .subscribe();
 }
 
-function removeFromCart(index) {
-  cart.splice(index, 1);
-  updateCartUI();
+function subscribeDelivery(callback) {
+    supabase.from('delivery_rates').select('*').then(({ data, error }) => {
+        if (!error && data) callback(data);
+    });
+
+    return supabase.channel('public:delivery_rates')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'delivery_rates' }, async () => {
+            const { data } = await supabase.from('delivery_rates').select('*');
+            if (data) callback(data);
+        })
+        .subscribe();
 }
 
-function openCartDrawer() {
-  const drawer = document.getElementById('cartDrawer');
-  if (drawer) drawer.classList.add('open');
+/* ===================================================
+   DATABASE MUTATIONS (ADMIN)
+=================================================== */
+async function saveProductData(product) {
+    const { error } = await supabase.from('products').upsert([product]);
+    if (error) console.error("Error saving product:", error);
 }
 
-function closeCartDrawer() {
-  const drawer = document.getElementById('cartDrawer');
-  if (drawer) drawer.classList.remove('open');
+async function deleteProductData(id) {
+    const { error } = await supabase.from('products').delete().eq('id', id);
+    if (error) console.error("Error deleting product:", error);
 }
 
-// ==========================================
-// REALTIME SUBSCRIPTIONS
-// ==========================================
-
-function setupRealtimeSubscriptions(onProductChange, onOrderChange) {
-  supabaseClient
-    .channel('public-schema-changes')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, payload => {
-      if (onProductChange) onProductChange(payload);
-    })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, payload => {
-      if (onOrderChange) onOrderChange(payload);
-    })
-    .subscribe();
+async function saveCategoryData(category) {
+    const { error } = await supabase.from('categories').upsert([category]);
+    if (error) console.error("Error saving category:", error);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  checkUserSession();
-  updateCartUI();
-});
+async function deleteCategoryData(key) {
+    const { error } = await supabase.from('categories').delete().eq('key', key);
+    if (error) console.error("Error deleting category:", error);
+}
+
+async function saveDeliveryData(delivery) {
+    const { error } = await supabase.from('delivery_rates').upsert([delivery]);
+    if (error) console.error("Error saving delivery location:", error);
+}
+
+async function deleteDeliveryData(key) {
+    const { error } = await supabase.from('delivery_rates').delete().eq('key', key);
+    if (error) console.error("Error deleting delivery location:", error);
+}
