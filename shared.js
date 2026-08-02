@@ -149,6 +149,66 @@ function subscribeDelivery(callback) {
     return () => db.removeChannel(channel);
 }
 
+/* ---------- Orders & User Auth Helpers ---------- */
+async function registerUser(name, email, phone, password) {
+    const { data: existing } = await db.from('users_app').select('id').eq('email', email).single();
+    if (existing) throw new Error('Email is already registered.');
+    const { data, error } = await db.from('users_app').insert([{ name, email, phone, password }]).select().single();
+    if (error) throw error;
+    return data;
+}
+
+async function loginUser(email, password) {
+    const { data, error } = await db.from('users_app').select('*').eq('email', email).eq('password', password).single();
+    if (error || !data) throw new Error('Invalid email or password.');
+    return data;
+}
+
+async function createOrder(orderData) {
+    const { data, error } = await db.from('orders').insert([orderData]).select().single();
+    if (error) throw error;
+    return data;
+}
+
+function subscribeUserOrders(userId, callback) {
+    const fetchAndCallback = async () => {
+        const { data, error } = await db.from('orders').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+        if (!error && data) callback(data);
+    };
+
+    fetchAndCallback();
+
+    const channel = db.channel(`realtime:orders:${userId}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+            fetchAndCallback();
+        })
+        .subscribe();
+
+    return () => db.removeChannel(channel);
+}
+
+function subscribeAllOrders(callback) {
+    const fetchAndCallback = async () => {
+        const { data, error } = await db.from('orders').select('*').order('created_at', { ascending: false });
+        if (!error && data) callback(data);
+    };
+
+    fetchAndCallback();
+
+    const channel = db.channel('realtime:all_orders')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+            fetchAndCallback();
+        })
+        .subscribe();
+
+    return () => db.removeChannel(channel);
+}
+
+async function updateOrderDetails(orderId, updates) {
+    const { error } = await db.from('orders').update(updates).eq('id', orderId);
+    if (error) throw error;
+}
+
 /* ---------- Database Writes ---------- */
 async function saveProductDoc(id, data) {
     if (id) {
