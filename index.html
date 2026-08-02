@@ -22,23 +22,10 @@
 
             <div id="nav-categories" class="hidden md:flex items-center gap-6 text-sm font-medium"></div>
 
-            <div class="flex items-center gap-3">
-                <div id="auth-buttons">
-                    <button onclick="openAuthModal()" class="text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-md font-semibold">
-                        <i class="fa-solid fa-user mr-1"></i> Login / Register
-                    </button>
-                </div>
-                <div id="user-profile" class="hidden flex items-center gap-2">
-                    <button onclick="toggleMyOrders()" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md font-semibold text-gray-700">
-                        <i class="fa-solid fa-box mr-1"></i> My Orders
-                    </button>
-                    <button onclick="handleUserLogout()" class="text-xs text-red-500 hover:underline">Logout</button>
-                </div>
-
+            <div class="flex items-center gap-4">
                 <a href="dashboard.html" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md font-semibold text-gray-700">
                     <i class="fa-solid fa-user-shield mr-1"></i> Admin
                 </a>
-
                 <div class="relative cursor-pointer" onclick="openCart()">
                     <i class="fa-solid fa-cart-shopping text-xl text-gray-700"></i>
                     <span id="cart-badge" class="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">0</span>
@@ -53,15 +40,6 @@
     </div>
 
     <main class="max-w-7xl mx-auto px-4 py-8">
-        <!-- USER ORDERS DASHBOARD VIEW -->
-        <div id="view-orders" class="hidden mb-8 bg-white p-6 rounded-2xl border shadow-sm">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-box-open text-blue-600"></i> My Orders</h2>
-                <button onclick="toggleMyOrders()" class="text-xs bg-gray-100 px-3 py-1.5 rounded hover:bg-gray-200">Close</button>
-            </div>
-            <div id="user-orders-list" class="space-y-4"></div>
-        </div>
-
         <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 mb-8 text-white shadow-lg flex flex-col md:flex-row items-center justify-between">
             <div class="space-y-3 max-w-lg">
                 <span class="bg-blue-500 text-xs px-3 py-1 rounded-full uppercase tracking-wider font-semibold">Nepal Express Delivery</span>
@@ -139,36 +117,24 @@
                             <p class="font-bold text-gray-800 mb-1"><i class="fa-solid fa-money-bill-wave text-green-600 mr-1"></i> Payment</p>
                             <p class="text-gray-500">Cash on Delivery or eSewa available at checkout.</p>
                         </div>
+                        <div class="border-t pt-3">
+                            <p class="font-bold text-gray-800 mb-1"><i class="fa-solid fa-shield-halved text-blue-600 mr-1"></i> Warranty</p>
+                            <p class="text-gray-500">Genuine product, standard seller warranty applies.</p>
+                        </div>
                     </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-100 rounded-xl p-6 mt-8">
+                <h2 class="text-lg font-bold text-gray-900 mb-4">Description</h2>
+                <p id="detail-description" class="text-sm text-gray-600 mb-4"></p>
+                <ul id="detail-bullets" class="space-y-2 text-sm text-gray-700"></ul>
+                <div class="mt-6 rounded-lg overflow-hidden bg-gray-100">
+                    <img id="detail-banner-image" src="" alt="" class="w-full max-h-96 object-cover">
                 </div>
             </div>
         </div>
     </main>
-
-    <!-- AUTH MODAL (LOGIN/REGISTER) -->
-    <div id="auth-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-[70] p-4 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl relative">
-            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
-            <h2 id="auth-title" class="text-xl font-bold text-gray-900 mb-4 text-center">Login to TechStore NP</h2>
-            
-            <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
-                <div>
-                    <label class="text-xs font-semibold text-gray-600 block mb-1">Email Address</label>
-                    <input type="email" id="auth-email" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="text-xs font-semibold text-gray-600 block mb-1">Password</label>
-                    <input type="password" id="auth-password" required minlength="6" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <button type="submit" id="auth-submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg text-sm">Login</button>
-            </form>
-
-            <div class="mt-4 text-center text-xs text-gray-500">
-                <span id="auth-toggle-msg">Don't have an account?</span>
-                <button onclick="toggleAuthMode()" id="auth-toggle-btn" class="text-blue-600 font-semibold hover:underline ml-1">Register</button>
-            </div>
-        </div>
-    </div>
 
     <!-- CART & CHECKOUT SLIDE-OVER -->
     <div id="cart-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex justify-end">
@@ -217,16 +183,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- ESEWA QR PLACEHOLDER & TRANSACTION INPUT -->
-                    <div id="esewa-qr-section" class="hidden border rounded-xl p-4 bg-gray-50 text-center space-y-3">
-                        <p class="text-xs font-bold text-gray-700">Scan QR Code to Pay via eSewa</p>
-                        <div class="bg-white p-2 w-36 h-36 mx-auto border rounded flex items-center justify-center shadow-inner">
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=eSewa-TechStoreNP-Placeholder" alt="eSewa QR Code" class="w-full h-full object-contain">
-                        </div>
-                        <p class="text-[10px] text-gray-500">Scan QR, submit payment, and enter your Transaction ID below:</p>
-                        <input type="text" id="checkout-txn-id" placeholder="eSewa Transaction ID (e.g. 8X12903)" class="w-full border rounded-lg p-2 text-xs outline-none bg-white">
-                    </div>
                 </div>
 
                 <div class="space-y-1 text-sm">
@@ -238,6 +194,7 @@
                 <button onclick="handleCheckout()" id="place-order-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg">
                     <i class="fa-solid fa-lock text-sm"></i> Place Order
                 </button>
+                <p class="text-[11px] text-gray-400 text-center">By placing an order you agree to be contacted by email/phone to confirm delivery.</p>
             </div>
         </div>
     </div>
@@ -260,10 +217,13 @@
     <script>
         const FORMSPREE_ENDPOINT = "https://formspree.io/f/mdaqrzvn";
 
-        let products = [], categories = [], deliveryRates = [], cart = [];
-        let selectedPayment = 'cod', currentProductId = null, detailQty = 1;
-        let authMode = 'login'; // 'login' or 'register'
-        let currentUser = null;
+        let products = [];
+        let categories = [];
+        let deliveryRates = [];
+        let cart = [];
+        let selectedPayment = 'cod';
+        let currentProductId = null;
+        let detailQty = 1;
 
         window.addEventListener('DOMContentLoaded', async () => {
             await ensureSeeded();
@@ -271,18 +231,6 @@
             subscribeCategories(list => { categories = list; renderNavCategories(); renderFilterBar(); });
             subscribeDelivery(list => { deliveryRates = list; populateLocationOptions(); updateCartTotals(); });
             selectPayment('cod');
-
-            // Check current auth user
-            const { data: { session } } = await db.auth.getSession();
-            if (session) {
-                currentUser = session.user;
-                updateAuthUI();
-            }
-
-            db.auth.onAuthStateChange((event, session) => {
-                currentUser = session ? session.user : null;
-                updateAuthUI();
-            });
         });
 
         function hideLoadingBanner() {
@@ -293,6 +241,11 @@
         let activeCategory = 'all';
         function applyActiveFilter() {
             return activeCategory === 'all' ? products : products.filter(p => p.category === activeCategory);
+        }
+
+        function categoryLabel(key) {
+            const c = categories.find(x => x.key === key);
+            return c ? c.label : key;
         }
 
         function renderNavCategories() {
@@ -315,16 +268,34 @@
             }
             grid.innerHTML = items.map(p => {
                 const discount = p.oldPrice ? Math.round((1 - p.price / p.oldPrice) * 100) : 0;
+                const fullStars = Math.round(p.rating || 0);
+                const stars = Array.from({ length: 5 }).map((_, i) =>
+                    `<i class="fa-star text-[11px] ${i < fullStars ? 'fa-solid text-orange-400' : 'fa-regular text-gray-300'}"></i>`
+                ).join('');
+                const badgeHtml = p.badge === 'delivery'
+                    ? `<span class="inline-flex items-center gap-1 bg-green-600 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded"><i class="fa-solid fa-bolt text-[9px]"></i>Fast Delivery</span>`
+                    : p.badge === 'gems'
+                        ? `<span class="inline-flex items-center bg-pink-100 text-pink-600 text-[10px] font-semibold px-1.5 py-0.5 rounded">${p.badgeText || ''}</span>`
+                        : '';
                 return `
-                <div onclick="viewProduct('${p.id}')" class="cursor-pointer bg-white overflow-hidden hover:shadow-lg transition rounded-sm flex flex-col justify-between border border-gray-100">
+                <div onclick="viewProduct('${p.id}')" class="cursor-pointer bg-white overflow-hidden hover:shadow-lg transition rounded-sm flex flex-col justify-between">
                     <div class="aspect-square bg-gray-50 overflow-hidden relative">
                         <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover">
+                        ${p.brand ? `<span class="absolute top-2 left-2 bg-white/90 text-[9px] font-bold text-gray-700 px-1.5 py-0.5 rounded shadow-sm">${p.brand}</span>` : ''}
                     </div>
                     <div class="p-2.5">
-                        <h3 class="text-gray-700 text-xs leading-snug line-clamp-2 min-h-[2.2rem] font-medium">${p.title}</h3>
-                        <div class="flex items-baseline gap-2 mt-1">
+                        <div class="flex items-start gap-1 mb-1.5">
+                            <span class="bg-indigo-600 text-white text-[9px] font-bold px-1 rounded shrink-0 mt-0.5">dm</span>
+                            <h3 class="text-gray-700 text-xs leading-snug line-clamp-2 min-h-[2.2rem]">${p.title}</h3>
+                        </div>
+                        <div class="flex items-baseline gap-2 flex-wrap">
                             <span class="text-orange-500 font-bold text-sm">Rs.${p.price.toLocaleString()}</span>
-                            ${discount > 0 ? `<span class="text-[11px] text-gray-400 line-through">Rs.${p.oldPrice.toLocaleString()}</span>` : ''}
+                            ${discount > 0 ? `<span class="text-[11px] text-gray-400">${discount}% Off</span>` : ''}
+                        </div>
+                        ${badgeHtml ? `<div class="mt-1">${badgeHtml}</div>` : ''}
+                        <div class="flex items-center gap-1.5 mt-1.5 text-[10px] text-gray-400 flex-wrap">
+                            ${p.sold ? `<span>${p.sold} sold</span><span>|</span>` : ''}
+                            ${p.reviews ? `<span class="flex gap-0.5">${stars}</span><span>(${p.reviews})</span>` : ''}
                         </div>
                     </div>
                 </div>`;
@@ -338,96 +309,93 @@
             renderProducts(applyActiveFilter());
         }
 
-        /* ---------- AUTHENTICATION ---------- */
-        function openAuthModal() { document.getElementById('auth-modal').classList.remove('hidden'); document.getElementById('auth-modal').classList.add('flex'); }
-        function closeAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); document.getElementById('auth-modal').classList.remove('flex'); }
+        function viewProduct(id) {
+            const p = products.find(x => x.id === id);
+            if (!p) return;
+            currentProductId = id;
+            detailQty = 1;
 
-        function toggleAuthMode() {
-            authMode = authMode === 'login' ? 'register' : 'login';
-            document.getElementById('auth-title').innerText = authMode === 'login' ? 'Login to TechStore NP' : 'Register Account';
-            document.getElementById('auth-submit-btn').innerText = authMode === 'login' ? 'Login' : 'Register';
-            document.getElementById('auth-toggle-msg').innerText = authMode === 'login' ? "Don't have an account?" : "Already have an account?";
-            document.getElementById('auth-toggle-btn').innerText = authMode === 'login' ? 'Register' : 'Login';
-        }
+            document.getElementById('detail-category').innerText = categoryLabel(p.category);
+            document.getElementById('detail-title').innerText = p.title;
+            document.getElementById('detail-price').innerText = `Rs.${p.price.toLocaleString()}`;
+            document.getElementById('detail-oldprice').innerText = p.oldPrice ? `Rs.${p.oldPrice.toLocaleString()}` : '';
+            const discount = p.oldPrice ? Math.round((1 - p.price / p.oldPrice) * 100) : 0;
+            document.getElementById('detail-discount').innerText = discount > 0 ? `-${discount}%` : '';
+            document.getElementById('detail-main-image').src = p.image;
+            document.getElementById('detail-main-image').alt = p.title;
+            document.getElementById('detail-banner-image').src = p.image;
+            document.getElementById('detail-banner-image').alt = p.title;
+            document.getElementById('detail-description').innerText = p.description || '';
+            document.getElementById('detail-bullets').innerHTML = (p.bullets || []).map(b => `<li>${b}</li>`).join('');
 
-        async function handleAuthSubmit(e) {
-            e.preventDefault();
-            const email = document.getElementById('auth-email').value.trim();
-            const password = document.getElementById('auth-password').value.trim();
-
-            if (authMode === 'register') {
-                const { error } = await db.auth.signUp({ email, password });
-                if (error) alert(error.message);
-                else { alert('Registration successful! Check email to confirm or sign in.'); closeAuthModal(); }
+            if (p.reviews) {
+                const fullStars = Math.round(p.rating || 0);
+                const starsHtml = Array.from({ length: 5 }).map((_, i) =>
+                    `<i class="fa-star text-xs ${i < fullStars ? 'fa-solid text-orange-400' : 'fa-regular text-gray-300'}"></i>`
+                ).join('');
+                const soldHtml = p.sold ? `<span class="text-xs text-gray-400 ml-2">${p.sold} sold</span>` : '';
+                document.getElementById('detail-rating').innerHTML = `<span class="flex gap-0.5">${starsHtml}</span><span class="text-xs text-gray-400 ml-1">(${p.reviews} ratings)</span>${soldHtml}`;
             } else {
-                const { error } = await db.auth.signInWithPassword({ email, password });
-                if (error) alert(error.message);
-                else { closeAuthModal(); }
-            }
-        }
-
-        async function handleUserLogout() {
-            await db.auth.signOut();
-            document.getElementById('view-orders').classList.add('hidden');
-        }
-
-        function updateAuthUI() {
-            if (currentUser) {
-                document.getElementById('auth-buttons').classList.add('hidden');
-                document.getElementById('user-profile').classList.remove('hidden');
-                document.getElementById('checkout-email').value = currentUser.email;
-            } else {
-                document.getElementById('auth-buttons').classList.remove('hidden');
-                document.getElementById('user-profile').classList.add('hidden');
-            }
-        }
-
-        /* ---------- USER ORDERS DASHBOARD ---------- */
-        async function toggleMyOrders() {
-            const panel = document.getElementById('view-orders');
-            if (panel.classList.contains('hidden')) {
-                if (!currentUser) { openAuthModal(); return; }
-                panel.classList.remove('hidden');
-                renderUserOrders();
-            } else {
-                panel.classList.add('hidden');
-            }
-        }
-
-        async function renderUserOrders() {
-            const container = document.getElementById('user-orders-list');
-            container.innerHTML = `<p class="text-xs text-gray-400"><i class="fa-solid fa-spinner fa-spin"></i> Loading orders...</p>`;
-
-            const { data: orders, error } = await db.from('orders').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
-
-            if (error || !orders || orders.length === 0) {
-                container.innerHTML = `<p class="text-sm text-gray-500 py-4 text-center">No recent orders found.</p>`;
-                return;
+                document.getElementById('detail-rating').innerHTML = '';
             }
 
-            container.innerHTML = orders.map(o => `
-                <div class="border rounded-xl p-4 bg-gray-50 flex flex-col md:flex-row justify-between gap-4">
-                    <div>
-                        <p class="text-xs font-bold text-gray-800">Order ID: <span class="text-blue-600">${o.order_id}</span></p>
-                        <p class="text-xs text-gray-500">${new Date(o.created_at).toLocaleString()}</p>
-                        <div class="text-xs mt-2 text-gray-700 whitespace-pre-line border-t pt-2">${o.items}</div>
-                        <p class="text-xs font-bold text-gray-900 mt-2">Total: NPR ${o.total}</p>
-                    </div>
-                    <div class="space-y-2 md:text-right shrink-0">
-                        <div>
-                            <span class="text-[10px] text-gray-400 block uppercase font-bold">Delivery Status</span>
-                            <span class="inline-block bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-full uppercase">${o.status}</span>
-                        </div>
-                        <div>
-                            <span class="text-[10px] text-gray-400 block uppercase font-bold">Payment Status</span>
-                            <span class="inline-block bg-green-100 text-green-700 text-xs font-semibold px-2.5 py-1 rounded-full uppercase">${o.payment_status || 'payment processing'}</span>
-                        </div>
-                    </div>
+            const thumbs = document.getElementById('detail-thumbnails');
+            thumbs.innerHTML = Array.from({ length: 4 }).map(() => `
+                <div class="w-14 h-14 rounded-lg overflow-hidden border-2 border-transparent hover:border-blue-500 cursor-pointer">
+                    <img src="${p.image}" class="w-full h-full object-cover">
                 </div>
             `).join('');
+
+            document.getElementById('detail-qty').innerText = '1';
+            document.getElementById('view-grid').classList.add('hidden');
+            document.getElementById('view-detail').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        /* ---------- CART & CHECKOUT ---------- */
+        function backToStore() {
+            currentProductId = null;
+            document.getElementById('view-detail').classList.add('hidden');
+            document.getElementById('view-grid').classList.remove('hidden');
+        }
+
+        function changeDetailQty(delta) {
+            detailQty = Math.max(1, detailQty + delta);
+            document.getElementById('detail-qty').innerText = detailQty;
+        }
+
+        function addToCartFromDetail() {
+            if (!currentProductId) return;
+            const item = products.find(p => p.id === currentProductId);
+            const existing = cart.find(c => c.id === currentProductId);
+            if (existing) { existing.qty += detailQty; } else { cart.push({ ...item, qty: detailQty }); }
+            updateCartTotals();
+            showToast(`Added "${item.title}" to cart`);
+        }
+
+        function buyNowFromDetail() {
+            if (!currentProductId) return;
+            const item = products.find(p => p.id === currentProductId);
+            const existing = cart.find(c => c.id === currentProductId);
+            if (existing) { existing.qty += detailQty; } else { cart.push({ ...item, qty: detailQty }); }
+            updateCartTotals();
+            openCart();
+        }
+
+        let toastTimer = null;
+        function showToast(message) {
+            let toast = document.getElementById('cart-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'cart-toast';
+                toast.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-sm font-medium px-5 py-3 rounded-full shadow-lg z-[70] flex items-center gap-2 opacity-0 transition-opacity duration-300 pointer-events-none';
+                document.body.appendChild(toast);
+            }
+            toast.innerHTML = `<i class="fa-solid fa-circle-check text-green-400"></i> ${message}`;
+            toast.style.opacity = '1';
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => { toast.style.opacity = '0'; }, 2000);
+        }
+
         function populateLocationOptions() {
             const select = document.getElementById('checkout-location');
             const prev = select.value;
@@ -435,15 +403,24 @@
             if (deliveryRates.some(r => r.key === prev)) select.value = prev;
         }
 
+        function updateCartQty(id, delta) {
+            const item = cart.find(c => c.id === id);
+            if (!item) return;
+            item.qty += delta;
+            if (item.qty <= 0) cart = cart.filter(c => c.id !== id);
+            updateCartTotals();
+        }
+
         function updateCartTotals() {
             const badge = document.getElementById('cart-badge');
-            badge.innerText = cart.reduce((sum, item) => sum + item.qty, 0);
+            const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+            badge.innerText = totalQty;
 
-            const container = document.getElementById('cart-items');
+            const cartContainer = document.getElementById('cart-items');
             if (cart.length === 0) {
-                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-8">Your cart is currently empty.</p>`;
+                cartContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-8">Your cart is currently empty.</p>`;
             } else {
-                container.innerHTML = cart.map(item => `
+                cartContainer.innerHTML = cart.map(item => `
                     <div class="flex items-center justify-between pt-3">
                         <div class="flex items-center gap-3">
                             <img src="${item.image}" class="w-12 h-12 rounded object-cover">
@@ -453,9 +430,9 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-2 border rounded-lg px-2 py-1 text-xs">
-                            <button onclick="updateCartQty('${item.id}', -1)" class="font-bold px-1">-</button>
+                            <button onclick="updateCartQty('${item.id}', -1)" class="text-gray-500 font-bold px-1">-</button>
                             <span class="font-semibold">${item.qty}</span>
-                            <button onclick="updateCartQty('${item.id}', 1)" class="font-bold px-1">+</button>
+                            <button onclick="updateCartQty('${item.id}', 1)" class="text-gray-500 font-bold px-1">+</button>
                         </div>
                     </div>
                 `).join('');
@@ -471,14 +448,6 @@
             document.getElementById('summary-total').innerText = `NPR ${(subtotal + (cart.length ? deliveryCharge : 0)).toLocaleString()}`;
         }
 
-        function updateCartQty(id, delta) {
-            const item = cart.find(c => c.id === id);
-            if (!item) return;
-            item.qty += delta;
-            if (item.qty <= 0) cart = cart.filter(c => c.id !== id);
-            updateCartTotals();
-        }
-
         function openCart() { document.getElementById('cart-modal').classList.remove('hidden'); }
         function closeCart() { document.getElementById('cart-modal').classList.add('hidden'); }
 
@@ -486,26 +455,27 @@
             selectedPayment = method;
             document.getElementById('pay-cod').classList.toggle('selected', method === 'cod');
             document.getElementById('pay-esewa').classList.toggle('selected', method === 'esewa');
-            document.getElementById('esewa-qr-section').classList.toggle('hidden', method !== 'esewa');
         }
 
-        function openConfirmModal(msg) { document.getElementById('confirm-message').innerText = msg; document.getElementById('confirm-modal').classList.remove('hidden'); document.getElementById('confirm-modal').classList.add('flex'); }
-        function closeConfirmModal() { document.getElementById('confirm-modal').classList.add('hidden'); document.getElementById('confirm-modal').classList.remove('flex'); }
+        function openConfirmModal(message) {
+            document.getElementById('confirm-message').innerText = message;
+            const modal = document.getElementById('confirm-modal');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+        }
+        function closeConfirmModal() {
+            const modal = document.getElementById('confirm-modal');
+            modal.classList.add('hidden'); modal.classList.remove('flex');
+        }
 
         async function handleCheckout() {
-            if (cart.length === 0) { alert('Add items to your cart.'); return; }
+            if (cart.length === 0) { alert('Add items to your cart before proceeding.'); return; }
             const name = document.getElementById('checkout-name').value.trim();
             const phone = document.getElementById('checkout-phone').value.trim();
             const email = document.getElementById('checkout-email').value.trim();
             const address = document.getElementById('checkout-address').value.trim();
-            const txnId = document.getElementById('checkout-txn-id').value.trim();
-
             if (!name || !phone || !email || !address) {
-                alert('Please fill in all required delivery details.'); return;
-            }
-
-            if (selectedPayment === 'esewa' && !txnId) {
-                alert('Please enter your eSewa Transaction ID.'); return;
+                alert('Please fill in your name, phone, email, and delivery address.');
+                return;
             }
 
             const locationKey = document.getElementById('checkout-location').value;
@@ -513,36 +483,44 @@
             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
             const total = subtotal + rate.charge;
             const orderId = 'ORD' + Date.now();
-            const itemsSummary = cart.map(c => `${c.title} x${c.qty} (NPR ${c.price})`).join('\n');
+            const itemsSummary = cart.map(c => `${c.title} x${c.qty} (NPR ${c.price} each)`).join('\n');
+            const paymentLabel = selectedPayment === 'esewa' ? 'eSewa' : 'Cash on Delivery';
 
-            const orderPayload = {
-                order_id: orderId, user_id: currentUser ? currentUser.id : null,
-                name, phone, email, address, delivery_location: rate.city,
-                payment_method: selectedPayment === 'esewa' ? 'eSewa' : 'Cash on Delivery',
-                transaction_id: txnId || null, items: itemsSummary,
-                subtotal, delivery_charge: rate.charge, total,
-                status: 'processing', payment_status: selectedPayment === 'esewa' ? 'payment processing' : 'pending'
+            const payload = {
+                order_id: orderId, name, phone, email, address,
+                delivery_location: rate.city, payment_method: paymentLabel,
+                items: itemsSummary, subtotal, delivery_charge: rate.charge, total
             };
 
             const btn = document.getElementById('place-order-btn');
-            btn.disabled = true; btn.innerText = 'Placing Order...';
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Placing order...`;
 
             try {
-                await db.from('orders').insert([orderPayload]);
                 await fetch(FORMSPREE_ENDPOINT, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(orderPayload)
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
-            } catch (err) { console.error(err); }
+            } catch (err) {
+                console.error('Order submission failed:', err);
+            }
 
-            btn.disabled = false; btn.innerText = 'Place Order';
-            cart = []; updateCartTotals(); closeCart();
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fa-solid fa-lock text-sm"></i> Place Order`;
+
+            cart = [];
+            document.getElementById('checkout-name').value = '';
+            document.getElementById('checkout-phone').value = '';
+            document.getElementById('checkout-email').value = '';
+            document.getElementById('checkout-address').value = '';
+            updateCartTotals();
+            closeCart();
 
             if (selectedPayment === 'esewa') {
-                openConfirmModal(`Order ${orderId} placed! We are verifying your eSewa transaction (ID: ${txnId}). Track status under 'My Orders'.`);
+                openConfirmModal(`Order ${orderId} placed. Check your email in a few minutes — we'll send the eSewa payment QR code along with your delivery date and other order info.`);
             } else {
-                openConfirmModal(`Order ${orderId} placed via Cash on Delivery! Track order updates under 'My Orders'.`);
+                openConfirmModal(`Order ${orderId} placed with Cash on Delivery. Check your email in a few minutes for your delivery date and other order info.`);
             }
         }
     </script>
