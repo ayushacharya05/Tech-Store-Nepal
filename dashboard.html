@@ -39,7 +39,7 @@
         <div class="flex justify-between items-center mb-8">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-                <p class="text-sm text-gray-500">Manage orders, products, categories, and delivery rates.</p>
+                <p class="text-sm text-gray-500">Manage products, categories, and delivery rates. Changes save to the cloud instantly.</p>
             </div>
             <div class="flex gap-2">
                 <button onclick="handleAdminLogout()" class="text-sm bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg font-medium">Logout</button>
@@ -50,29 +50,25 @@
         <div id="sync-status" class="text-xs text-gray-400 mb-4"></div>
 
         <div class="flex gap-2 mb-6 border-b text-sm font-semibold">
-            <button id="tab-orders" onclick="switchTab('orders')" class="px-4 py-2 active-tab">Orders</button>
-            <button id="tab-products" onclick="switchTab('products')" class="px-4 py-2 text-gray-500">Products</button>
+            <button id="tab-products" onclick="switchTab('products')" class="px-4 py-2 active-tab">Products</button>
             <button id="tab-categories" onclick="switchTab('categories')" class="px-4 py-2 text-gray-500">Categories</button>
             <button id="tab-delivery" onclick="switchTab('delivery')" class="px-4 py-2 text-gray-500">Delivery Rates</button>
-        </div>
-
-        <!-- ORDERS PANEL -->
-        <div id="panel-orders">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <h2 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-boxes-packing text-blue-600"></i> Manage Customer Orders</h2>
-                <div id="admin-orders-list" class="space-y-4"></div>
-            </div>
+            <button id="tab-account" onclick="switchTab('account')" class="px-4 py-2 text-gray-500">Admin Account</button>
         </div>
 
         <!-- PRODUCTS PANEL -->
-        <div id="panel-products" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div id="panel-products" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-fit">
                 <h2 id="product-form-title" class="text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-plus text-blue-600"></i> Add New Product</h2>
                 <form id="product-form" onsubmit="handleSaveProduct(event)" class="space-y-4">
                     <input type="hidden" id="p-id">
                     <div>
                         <label class="text-xs font-semibold text-gray-600 block mb-1">Product Title</label>
-                        <textarea id="p-title" required rows="2" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        <textarea id="p-title" required rows="2" placeholder="Full product title / listing name" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-600 block mb-1">Brand</label>
+                        <input type="text" id="p-brand" placeholder="e.g. Ultima" class="w-full border rounded-lg p-2.5 text-sm outline-none">
                     </div>
                     <div>
                         <label class="text-xs font-semibold text-gray-600 block mb-1">Category</label>
@@ -81,25 +77,65 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="text-xs font-semibold text-gray-600 block mb-1">Price (NPR)</label>
-                            <input type="number" id="p-price" required class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                            <input type="number" id="p-price" required placeholder="2500" class="w-full border rounded-lg p-2.5 text-sm outline-none">
                         </div>
                         <div>
-                            <label class="text-xs font-semibold text-gray-600 block mb-1">Original Price</label>
-                            <input type="number" id="p-oldprice" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                            <label class="text-xs font-semibold text-gray-600 block mb-1">Original Price (optional)</label>
+                            <input type="number" id="p-oldprice" placeholder="3500" class="w-full border rounded-lg p-2.5 text-sm outline-none">
                         </div>
                     </div>
                     <div>
                         <label class="text-xs font-semibold text-gray-600 block mb-1">Image URL</label>
-                        <input type="url" id="p-image" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                        <input type="url" id="p-image" placeholder="https://..." class="w-full border rounded-lg p-2.5 text-sm outline-none">
                     </div>
-                    <button type="submit" id="save-product-btn" class="w-full bg-blue-600 text-white font-medium py-2.5 rounded-lg text-sm hover:bg-blue-700">Save Product</button>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-600 block mb-1">Short Description</label>
+                        <textarea id="p-description" rows="2" placeholder="One or two sentence summary" class="w-full border rounded-lg p-2.5 text-sm outline-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-600 block mb-1">Feature Bullets (one per line)</label>
+                        <textarea id="p-bullets" rows="4" placeholder="⚡ Fast charging&#10;🔋 Long battery life" class="w-full border rounded-lg p-2.5 text-sm outline-none"></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs font-semibold text-gray-600 block mb-1">Rating (0–5)</label>
+                            <input type="number" id="p-rating" step="0.1" min="0" max="5" placeholder="4.5" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-gray-600 block mb-1">Reviews Count</label>
+                            <input type="number" id="p-reviews" placeholder="120" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-600 block mb-1">Sold Label (optional)</label>
+                        <input type="text" id="p-sold" placeholder="e.g. 2.4K" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-600 block mb-1">Badge</label>
+                        <select id="p-badge" onchange="toggleBadgeText()" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                            <option value="">None</option>
+                            <option value="delivery">Fast Delivery</option>
+                            <option value="gems">Gems Save (custom text)</option>
+                        </select>
+                    </div>
+                    <div id="p-badgetext-wrap" class="hidden">
+                        <label class="text-xs font-semibold text-gray-600 block mb-1">Badge Text</label>
+                        <input type="text" id="p-badgetext" placeholder="Gems save Rs.13" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                    </div>
+                    <div class="flex gap-2">
+                        <button type="submit" id="save-product-btn" class="flex-1 bg-blue-600 text-white font-medium py-2.5 rounded-lg text-sm hover:bg-blue-700">Save Product</button>
+                        <button type="button" onclick="resetProductForm()" class="px-4 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200">Clear</button>
+                    </div>
                 </form>
             </div>
 
             <div class="lg:col-span-2">
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h2 class="text-lg font-bold mb-4">Active Catalog Items</h2>
-                    <div id="admin-product-list" class="space-y-3"></div>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold">Active Catalog Items</h2>
+                        <span id="product-count-label" class="text-xs text-gray-400"></span>
+                    </div>
+                    <div id="admin-product-list" class="space-y-3 max-h-[40rem] overflow-y-auto"></div>
                 </div>
             </div>
         </div>
@@ -108,6 +144,10 @@
         <div id="panel-categories" class="hidden max-w-xl">
             <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                 <h2 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-tags text-blue-600"></i> Categories</h2>
+                <form onsubmit="handleAddCategory(event)" class="flex gap-2 mb-4">
+                    <input type="text" id="cat-label" required placeholder="e.g. Mobile Accessories" class="flex-1 border rounded-lg p-2.5 text-sm outline-none">
+                    <button type="submit" class="bg-blue-600 text-white px-4 rounded-lg text-sm font-semibold hover:bg-blue-700">Add</button>
+                </form>
                 <div id="category-list" class="space-y-2"></div>
             </div>
         </div>
@@ -115,8 +155,27 @@
         <!-- DELIVERY PANEL -->
         <div id="panel-delivery" class="hidden">
             <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <h2 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-truck-ram text-blue-600"></i> Delivery Rates</h2>
-                <div id="delivery-rate-table"></div>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-truck-ram text-blue-600"></i> Delivery Rates</h2>
+                    <button onclick="addDeliveryLocation()" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-md font-semibold hover:bg-blue-700"><i class="fa-solid fa-plus mr-1"></i>Add Location</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-gray-50 text-gray-600 text-xs uppercase">
+                            <tr><th class="p-3">Location</th><th class="p-3">Province</th><th class="p-3">Charge (NPR)</th><th class="p-3 text-right">Action</th></tr>
+                        </thead>
+                        <tbody id="delivery-rate-table" class="divide-y"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACCOUNT PANEL -->
+        <div id="panel-account" class="hidden max-w-md">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-key text-blue-600"></i> Admin Login</h2>
+                <p class="text-sm text-gray-600 mb-3">Current login: <b id="current-admin-user"></b></p>
+                <p class="text-xs text-gray-400">To change admin settings, modify DEFAULT_ADMIN in dashboard.html.</p>
             </div>
         </div>
     </div>
@@ -126,104 +185,268 @@
     <script src="shared.js"></script>
     <script>
         const DEFAULT_ADMIN = { username: 'ayushacharya', password: 'Ayush@2059' };
-        let products = [], categories = [], deliveryRates = [], orders = [];
+
+        let products = [];
+        let categories = [];
+        let deliveryRates = [];
+        let unsubProducts = null, unsubCategories = null, unsubDelivery = null;
 
         function handleAdminLogin(e) {
             e.preventDefault();
-            if (document.getElementById('admin-input-user').value.trim() === DEFAULT_ADMIN.username &&
-                document.getElementById('admin-input-pass').value.trim() === DEFAULT_ADMIN.password) {
+            const userInput = document.getElementById('admin-input-user').value.trim();
+            const passInput = document.getElementById('admin-input-pass').value.trim();
+            if (userInput === DEFAULT_ADMIN.username && passInput === DEFAULT_ADMIN.password) {
                 document.getElementById('login-gate').classList.add('hidden');
                 document.getElementById('dashboard').classList.remove('hidden');
+                document.getElementById('current-admin-user').innerText = DEFAULT_ADMIN.username;
                 initDashboard();
-            } else alert('Invalid Admin Credentials.');
+            } else {
+                alert('Invalid Admin Credentials.');
+            }
         }
 
         function handleAdminLogout() {
+            if (unsubProducts) unsubProducts();
+            if (unsubCategories) unsubCategories();
+            if (unsubDelivery) unsubDelivery();
             document.getElementById('dashboard').classList.add('hidden');
             document.getElementById('login-gate').classList.remove('hidden');
         }
 
         async function initDashboard() {
+            document.getElementById('sync-status').innerHTML = `<i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Connecting to database...`;
             await ensureSeeded();
-            switchTab('orders');
-            subscribeProducts(list => { products = list; renderAdminProducts(); });
-            subscribeCategories(list => { categories = list; });
-            subscribeDelivery(list => { deliveryRates = list; });
-            subscribeOrders(list => { orders = list; renderAdminOrders(); });
+            switchTab('products');
+
+            unsubProducts = subscribeProducts(list => {
+                products = list;
+                renderAdminProducts();
+                renderCategoryList();
+                document.getElementById('sync-status').innerHTML = `<i class="fa-solid fa-circle-check text-green-500 mr-1"></i> Synced with store database.`;
+            });
+            unsubCategories = subscribeCategories(list => {
+                categories = list;
+                populateCategorySelect();
+                renderCategoryList();
+            });
+            unsubDelivery = subscribeDelivery(list => {
+                deliveryRates = list;
+                renderAdminDeliveryRates();
+            });
         }
 
         function switchTab(tab) {
-            ['orders', 'products', 'categories', 'delivery'].forEach(t => {
+            ['products', 'categories', 'delivery', 'account'].forEach(t => {
                 document.getElementById(`panel-${t}`).classList.toggle('hidden', t !== tab);
                 document.getElementById(`tab-${t}`).classList.toggle('active-tab', t === tab);
                 document.getElementById(`tab-${t}`).classList.toggle('text-gray-500', t !== tab);
             });
         }
 
-        function renderAdminOrders() {
-            const container = document.getElementById('admin-orders-list');
-            if (orders.length === 0) {
-                container.innerHTML = `<p class="text-sm text-gray-400 py-4">No customer orders placed yet.</p>`;
-                return;
-            }
-
-            container.innerHTML = orders.map(o => `
-                <div class="border rounded-xl p-4 bg-gray-50 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <p class="text-xs font-bold text-gray-900">Order ID: <span class="text-blue-600">${o.order_id}</span></p>
-                        <p class="text-xs font-semibold text-gray-700">${o.name} (${o.phone})</p>
-                        <p class="text-xs text-gray-500">${o.email} | ${o.address}, ${o.delivery_location}</p>
-                        <p class="text-xs text-gray-400 mt-1">Payment Method: <b>${o.payment_method}</b> ${o.transaction_id ? `(Txn: ${o.transaction_id})` : ''}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs font-bold text-gray-800">Items:</p>
-                        <div class="text-xs text-gray-600 whitespace-pre-line">${o.items}</div>
-                        <p class="text-xs font-bold text-gray-900 mt-1">Total: NPR ${o.total}</p>
-                    </div>
-                    <div class="space-y-3 bg-white p-3 border rounded-lg">
-                        <div>
-                            <label class="text-[10px] font-bold text-gray-500 block uppercase">Tracking Status</label>
-                            <select onchange="updateStatus('${o.id}', this.value, null)" class="w-full border rounded p-1.5 text-xs outline-none bg-gray-50">
-                                <option value="processing" ${o.status === 'processing' ? 'selected' : ''}>Processing</option>
-                                <option value="product packed" ${o.status === 'product packed' ? 'selected' : ''}>Product Packed</option>
-                                <option value="product shipped" ${o.status === 'product shipped' ? 'selected' : ''}>Product Shipped</option>
-                                <option value="nearby location" ${o.status === 'nearby location' ? 'selected' : ''}>Near By Our Location</option>
-                                <option value="product delivered" ${o.status === 'product delivered' ? 'selected' : ''}>Product Delivered</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-gray-500 block uppercase">Payment Status</label>
-                            <select onchange="updateStatus('${o.id}', null, this.value)" class="w-full border rounded p-1.5 text-xs outline-none bg-gray-50">
-                                <option value="payment processing" ${o.payment_status === 'payment processing' ? 'selected' : ''}>Payment Processing</option>
-                                <option value="payment received" ${o.payment_status === 'payment received' ? 'selected' : ''}>Payment Received</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
+        function populateCategorySelect() {
+            const select = document.getElementById('p-category');
+            const prev = select.value;
+            select.innerHTML = categories.map(c => `<option value="${c.key}">${c.label}</option>`).join('');
+            if (categories.some(c => c.key === prev)) select.value = prev;
         }
 
-        async function updateStatus(orderId, status, payment_status) {
-            try {
-                await updateOrderStatusDoc(orderId, status, payment_status);
-            } catch (err) {
-                alert('Could not update status');
-            }
+        function toggleBadgeText() {
+            const badge = document.getElementById('p-badge').value;
+            document.getElementById('p-badgetext-wrap').classList.toggle('hidden', badge !== 'gems');
         }
 
         function renderAdminProducts() {
             const list = document.getElementById('admin-product-list');
-            list.innerHTML = products.map(p => `
-                <div class="flex items-center justify-between p-3 border rounded-lg bg-gray-50 text-xs">
-                    <div class="flex items-center gap-3">
-                        <img src="${p.image}" class="w-10 h-10 rounded object-cover">
-                        <div>
-                            <p class="font-bold text-gray-800">${p.title}</p>
-                            <span class="text-gray-500 uppercase">NPR ${p.price}</span>
+            document.getElementById('product-count-label').innerText = `${products.length} product${products.length === 1 ? '' : 's'}`;
+            if (products.length === 0) {
+                list.innerHTML = `<p class="text-sm text-gray-400 text-center py-8">No products yet.</p>`;
+                return;
+            }
+            list.innerHTML = products.map(p => {
+                const catLabel = (categories.find(c => c.key === p.category) || {}).label || p.category;
+                return `
+                <div class="flex items-center justify-between p-3 border rounded-lg bg-gray-50 text-xs gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <img src="${p.image}" class="w-12 h-12 rounded object-cover shrink-0" onerror="this.src='https://via.placeholder.com/100'">
+                        <div class="min-w-0">
+                            <p class="font-bold text-gray-800 truncate">${p.title}</p>
+                            <span class="text-gray-500 uppercase">${catLabel} • NPR ${p.price}</span>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                    <div class="flex items-center gap-3 shrink-0">
+                        <button onclick="editProduct('${p.id}')" class="text-blue-600 hover:underline font-semibold">Edit</button>
+                        <button onclick="deleteProduct('${p.id}')" class="text-red-500 hover:underline font-semibold">Delete</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function resetProductForm() {
+            document.getElementById('product-form').reset();
+            document.getElementById('p-id').value = '';
+            document.getElementById('product-form-title').innerHTML = `<i class="fa-solid fa-plus text-blue-600"></i> Add New Product`;
+            document.getElementById('p-badgetext-wrap').classList.add('hidden');
+            populateCategorySelect();
+        }
+
+        async function handleSaveProduct(e) {
+            e.preventDefault();
+            const id = document.getElementById('p-id').value;
+            const badge = document.getElementById('p-badge').value;
+            const productData = {
+                title: document.getElementById('p-title').value.trim(),
+                brand: document.getElementById('p-brand').value.trim(),
+                category: document.getElementById('p-category').value,
+                price: parseFloat(document.getElementById('p-price').value),
+                oldPrice: document.getElementById('p-oldprice').value ? parseFloat(document.getElementById('p-oldprice').value) : null,
+                image: document.getElementById('p-image').value.trim() || 'https://via.placeholder.com/400',
+                description: document.getElementById('p-description').value.trim(),
+                bullets: document.getElementById('p-bullets').value.split('\n').map(s => s.trim()).filter(Boolean),
+                rating: document.getElementById('p-rating').value ? parseFloat(document.getElementById('p-rating').value) : 0,
+                reviews: document.getElementById('p-reviews').value ? parseInt(document.getElementById('p-reviews').value) : 0,
+                sold: document.getElementById('p-sold').value.trim(),
+                badge: badge || null,
+                badgeText: badge === 'gems' ? document.getElementById('p-badgetext').value.trim() : ''
+            };
+
+            const btn = document.getElementById('save-product-btn');
+            btn.disabled = true;
+            btn.innerText = 'Saving...';
+            try {
+                await saveProductDoc(id || null, productData);
+                resetProductForm();
+            } catch (err) {
+                console.error(err);
+                alert('Could not save product.');
+            }
+            btn.disabled = false;
+            btn.innerText = 'Save Product';
+        }
+
+        function editProduct(id) {
+            const p = products.find(x => x.id === id);
+            if (!p) return;
+            document.getElementById('p-id').value = p.id;
+            document.getElementById('p-title').value = p.title;
+            document.getElementById('p-brand').value = p.brand || '';
+            populateCategorySelect();
+            document.getElementById('p-category').value = p.category;
+            document.getElementById('p-price').value = p.price;
+            document.getElementById('p-oldprice').value = p.oldPrice || '';
+            document.getElementById('p-image').value = p.image;
+            document.getElementById('p-description').value = p.description || '';
+            document.getElementById('p-bullets').value = (p.bullets || []).join('\n');
+            document.getElementById('p-rating').value = p.rating || '';
+            document.getElementById('p-reviews').value = p.reviews || '';
+            document.getElementById('p-sold').value = p.sold || '';
+            document.getElementById('p-badge').value = p.badge || '';
+            document.getElementById('p-badgetext').value = p.badgeText || '';
+            toggleBadgeText();
+            document.getElementById('product-form-title').innerHTML = `<i class="fa-solid fa-pen text-blue-600"></i> Edit Product`;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function deleteProduct(id) {
+            const p = products.find(x => x.id === id);
+            if (!p) return;
+            if (!confirm(`Delete "${p.title}"?`)) return;
+            try {
+                await deleteProductDoc(id);
+            } catch (err) {
+                console.error(err);
+                alert('Could not delete product.');
+            }
+        }
+
+        function renderCategoryList() {
+            const list = document.getElementById('category-list');
+            if (categories.length === 0) {
+                list.innerHTML = `<p class="text-sm text-gray-400">No categories yet.</p>`;
+                return;
+            }
+            list.innerHTML = categories.map(c => {
+                const count = products.filter(p => p.category === c.key).length;
+                return `
+                <div class="flex items-center justify-between border rounded-lg p-3 text-sm">
+                    <div><span class="font-semibold text-gray-800">${c.label}</span> <span class="text-xs text-gray-400">(${count} products)</span></div>
+                    <button onclick="deleteCategory('${c.key}')" class="text-red-500 hover:underline text-xs font-semibold">Delete</button>
+                </div>`;
+            }).join('');
+        }
+
+        async function handleAddCategory(e) {
+            e.preventDefault();
+            const label = document.getElementById('cat-label').value.trim();
+            if (!label) return;
+            const key = slugify(label);
+            if (categories.some(c => c.key === key)) {
+                alert('Category already exists.');
+                return;
+            }
+            const updated = [...categories, { key, label }];
+            try {
+                await saveCategoriesDoc(updated);
+                document.getElementById('cat-label').value = '';
+            } catch (err) {
+                console.error(err);
+                alert('Could not save category.');
+            }
+        }
+
+        async function deleteCategory(key) {
+            const inUse = products.filter(p => p.category === key).length;
+            if (inUse > 0) {
+                alert(`Can't delete category — ${inUse} product(s) still use it.`);
+                return;
+            }
+            if (!confirm('Delete category?')) return;
+            const updated = categories.filter(c => c.key !== key);
+            try {
+                await saveCategoriesDoc(updated);
+            } catch (err) {
+                console.error(err);
+                alert('Could not delete category.');
+            }
+        }
+
+        function renderAdminDeliveryRates() {
+            const tbody = document.getElementById('delivery-rate-table');
+            tbody.innerHTML = deliveryRates.map((r, index) => `
+                <tr class="hover:bg-gray-50">
+                    <td class="p-3 font-semibold text-gray-800">${r.city}</td>
+                    <td class="p-3 text-gray-500">${r.province}</td>
+                    <td class="p-3 font-bold text-blue-600">NPR ${r.charge}</td>
+                    <td class="p-3 text-right space-x-3">
+                        <button onclick="updateRatePrompt(${index})" class="text-xs text-blue-600 hover:underline font-semibold">Change Charge</button>
+                        <button onclick="deleteDeliveryLocation(${index})" class="text-xs text-red-500 hover:underline font-semibold">Remove</button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        async function updateRatePrompt(index) {
+            const newCharge = prompt(`New delivery charge (NPR) for ${deliveryRates[index].city}:`, deliveryRates[index].charge);
+            if (newCharge !== null && !isNaN(newCharge) && newCharge !== '') {
+                const updated = [...deliveryRates];
+                updated[index] = { ...updated[index], charge: parseFloat(newCharge) };
+                await saveDeliveryDoc(updated);
+            }
+        }
+
+        async function addDeliveryLocation() {
+            const city = prompt('City / location name:');
+            if (!city) return;
+            const province = prompt('Province:', '') || '';
+            const charge = prompt('Delivery charge (NPR):', '150');
+            if (charge === null || isNaN(charge) || charge === '') return;
+            const updated = [...deliveryRates, { key: slugify(city) + '-' + Date.now(), city, province, charge: parseFloat(charge) }];
+            await saveDeliveryDoc(updated);
+        }
+
+        async function deleteDeliveryLocation(index) {
+            if (deliveryRates.length <= 1) { alert('At least one location must remain.'); return; }
+            if (!confirm(`Remove "${deliveryRates[index].city}"?`)) return;
+            const updated = deliveryRates.filter((_, i) => i !== index);
+            await saveDeliveryDoc(updated);
         }
     </script>
 </body>
