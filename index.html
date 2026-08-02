@@ -23,6 +23,11 @@
             <div id="nav-categories" class="hidden md:flex items-center gap-6 text-sm font-medium"></div>
 
             <div class="flex items-center gap-4">
+                <div id="user-nav-area">
+                    <button onclick="openAuthModal('login')" class="text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-md font-semibold">
+                        <i class="fa-solid fa-user mr-1"></i> Login / Register
+                    </button>
+                </div>
                 <a href="dashboard.html" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md font-semibold text-gray-700">
                     <i class="fa-solid fa-user-shield mr-1"></i> Admin
                 </a>
@@ -134,7 +139,67 @@
                 </div>
             </div>
         </div>
+
+        <!-- USER ORDERS VIEW -->
+        <div id="view-orders" class="hidden">
+            <button onclick="backToStore()" class="text-sm text-gray-500 hover:text-blue-600 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-arrow-left"></i> Back to store
+            </button>
+            <h1 class="text-2xl font-bold mb-6">My Orders</h1>
+            <div id="user-orders-list" class="space-y-4"></div>
+        </div>
     </main>
+
+    <!-- AUTH MODAL (LOGIN / REGISTER) -->
+    <div id="auth-modal" class="fixed inset-0 bg-black/50 hidden z-[60] flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl relative">
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+
+            <!-- Login View -->
+            <div id="auth-login-view">
+                <h2 class="text-xl font-bold text-gray-900 mb-1">Welcome Back</h2>
+                <p class="text-xs text-gray-500 mb-4">Sign in to track orders and shop seamlessly.</p>
+                <form onsubmit="handleUserLogin(event)" class="space-y-3">
+                    <div>
+                        <label class="text-xs font-semibold text-gray-600 block mb-1">Email Address</label>
+                        <input type="email" id="login-email" required placeholder="you@example.com" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-600 block mb-1">Password</label>
+                        <input type="password" id="login-pass" required placeholder="••••••••" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg text-sm">Login</button>
+                </form>
+                <p class="text-xs text-gray-500 mt-4 text-center">Don't have an account? <button onclick="toggleAuthView('register')" class="text-blue-600 font-semibold hover:underline">Register</button></p>
+            </div>
+
+            <!-- Register View -->
+            <div id="auth-register-view" class="hidden">
+                <h2 class="text-xl font-bold text-gray-900 mb-1">Create Account</h2>
+                <p class="text-xs text-gray-500 mb-4">Register to easily manage orders in one place.</p>
+                <form onsubmit="handleUserRegister(event)" class="space-y-3">
+                    <div>
+                        <label class="text-xs font-semibold text-gray-600 block mb-1">Full Name</label>
+                        <input type="text" id="reg-name" required placeholder="Ayush Acharya" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-600 block mb-1">Phone Number</label>
+                        <input type="tel" id="reg-phone" required placeholder="98XXXXXXXX" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-600 block mb-1">Email Address</label>
+                        <input type="email" id="reg-email" required placeholder="you@example.com" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-600 block mb-1">Password</label>
+                        <input type="password" id="reg-pass" required placeholder="••••••••" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg text-sm">Create Account</button>
+                </form>
+                <p class="text-xs text-gray-500 mt-4 text-center">Already have an account? <button onclick="toggleAuthView('login')" class="text-blue-600 font-semibold hover:underline">Login</button></p>
+            </div>
+        </div>
+    </div>
 
     <!-- CART & CHECKOUT SLIDE-OVER -->
     <div id="cart-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex justify-end">
@@ -194,13 +259,33 @@
                 <button onclick="handleCheckout()" id="place-order-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg">
                     <i class="fa-solid fa-lock text-sm"></i> Place Order
                 </button>
-                <p class="text-[11px] text-gray-400 text-center">By placing an order you agree to be contacted by email/phone to confirm delivery.</p>
             </div>
         </div>
     </div>
 
+    <!-- ESEWA QR / PAYMENT SUBMISSION MODAL -->
+    <div id="esewa-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-[70] p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl relative text-center space-y-4">
+            <button onclick="closeEsewaModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <h2 class="text-lg font-bold text-gray-900">Pay with eSewa QR</h2>
+            <p class="text-xs text-gray-500">Scan the QR code below using your eSewa app to complete your payment.</p>
+
+            <div class="bg-gray-100 p-4 rounded-xl inline-block border">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=eSewa-TechStoreNP-9800000000" alt="eSewa QR Code" class="w-44 h-44 mx-auto rounded">
+                <p class="text-[11px] text-gray-500 mt-2 font-semibold">eSewa ID: 9800000000</p>
+            </div>
+
+            <div>
+                <label class="text-xs font-semibold text-gray-600 block mb-1 text-left">Transaction / Reference ID</label>
+                <input type="text" id="esewa-tx-input" placeholder="e.g. 8X39A20F" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+            </div>
+
+            <button onclick="submitEsewaTransaction()" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 rounded-lg text-sm">Submit Payment ID</button>
+        </div>
+    </div>
+
     <!-- ORDER CONFIRMATION MODAL -->
-    <div id="confirm-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-[60] p-4 backdrop-blur-sm">
+    <div id="confirm-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-[80] p-4 backdrop-blur-sm">
         <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl relative text-center">
             <div class="mx-auto mb-4 h-14 w-14 rounded-full bg-green-100 flex items-center justify-center">
                 <i class="fa-solid fa-circle-check text-3xl text-green-600"></i>
@@ -225,12 +310,17 @@
         let currentProductId = null;
         let detailQty = 1;
 
+        let currentUser = JSON.parse(localStorage.getItem('techstore_user') || 'null');
+        let currentEsewaOrderId = null;
+        let unsubUserOrders = null;
+
         window.addEventListener('DOMContentLoaded', async () => {
             await ensureSeeded();
             subscribeProducts(list => { products = list; renderNavCategories(); renderProducts(applyActiveFilter()); hideLoadingBanner(); });
             subscribeCategories(list => { categories = list; renderNavCategories(); renderFilterBar(); });
             subscribeDelivery(list => { deliveryRates = list; populateLocationOptions(); updateCartTotals(); });
             selectPayment('cod');
+            updateUserNav();
         });
 
         function hideLoadingBanner() {
@@ -238,6 +328,138 @@
             if (el) el.remove();
         }
 
+        /* User Authentication & Orders Nav */
+        function updateUserNav() {
+            const nav = document.getElementById('user-nav-area');
+            if (currentUser) {
+                nav.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <button onclick="openUserOrdersView()" class="text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-md font-semibold">
+                        <i class="fa-solid fa-box mr-1"></i> My Orders
+                    </button>
+                    <button onclick="handleUserLogout()" class="text-xs bg-red-50 text-red-600 hover:bg-red-100 px-2 py-1.5 rounded-md"><i class="fa-solid fa-right-from-bracket"></i></button>
+                </div>`;
+                document.getElementById('checkout-name').value = currentUser.name || '';
+                document.getElementById('checkout-phone').value = currentUser.phone || '';
+                document.getElementById('checkout-email').value = currentUser.email || '';
+            } else {
+                nav.innerHTML = `
+                <button onclick="openAuthModal('login')" class="text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-md font-semibold">
+                    <i class="fa-solid fa-user mr-1"></i> Login / Register
+                </button>`;
+            }
+        }
+
+        function openAuthModal(view) {
+            toggleAuthView(view);
+            document.getElementById('auth-modal').classList.remove('hidden');
+        }
+        function closeAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); }
+
+        function toggleAuthView(view) {
+            document.getElementById('auth-login-view').classList.toggle('hidden', view !== 'login');
+            document.getElementById('auth-register-view').classList.toggle('hidden', view !== 'register');
+        }
+
+        async function handleUserRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const pass = document.getElementById('reg-pass').value.trim();
+            try {
+                const user = await registerUser(name, email, phone, pass);
+                currentUser = user;
+                localStorage.setItem('techstore_user', JSON.stringify(currentUser));
+                updateUserNav();
+                closeAuthModal();
+                showToast('Registration successful!');
+            } catch (err) {
+                alert(err.message || 'Registration failed');
+            }
+        }
+
+        async function handleUserLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-pass').value.trim();
+            try {
+                const user = await loginUser(email, pass);
+                currentUser = user;
+                localStorage.setItem('techstore_user', JSON.stringify(currentUser));
+                updateUserNav();
+                closeAuthModal();
+                showToast('Welcome back!');
+            } catch (err) {
+                alert(err.message || 'Login failed');
+            }
+        }
+
+        function handleUserLogout() {
+            currentUser = null;
+            localStorage.removeItem('techstore_user');
+            if (unsubUserOrders) unsubUserOrders();
+            updateUserNav();
+            backToStore();
+            showToast('Logged out');
+        }
+
+        function openUserOrdersView() {
+            if (!currentUser) { openAuthModal('login'); return; }
+            document.getElementById('view-grid').classList.add('hidden');
+            document.getElementById('view-detail').classList.add('hidden');
+            document.getElementById('view-orders').classList.remove('hidden');
+
+            if (unsubUserOrders) unsubUserOrders();
+            unsubUserOrders = subscribeUserOrders(currentUser.id, orders => {
+                renderUserOrders(orders);
+            });
+        }
+
+        function renderUserOrders(orders) {
+            const container = document.getElementById('user-orders-list');
+            if (!orders || orders.length === 0) {
+                container.innerHTML = `<p class="text-sm text-gray-400 py-8">You haven't placed any orders yet.</p>`;
+                return;
+            }
+
+            container.innerHTML = orders.map(o => {
+                const isEsewa = o.payment_method === 'eSewa';
+                const payStatusColor = o.payment_status === 'Verified' ? 'text-green-600 bg-green-50' : o.payment_status === 'Payment Processing' ? 'text-amber-600 bg-amber-50' : 'text-gray-600 bg-gray-50';
+                
+                let orderBadgeColor = 'bg-blue-50 text-blue-600';
+                if (o.order_status === 'Delivered') orderBadgeColor = 'bg-green-50 text-green-600';
+                else if (o.order_status === 'Packing') orderBadgeColor = 'bg-amber-50 text-amber-600';
+                else if (o.order_status === 'Shipped') orderBadgeColor = 'bg-indigo-50 text-indigo-600';
+
+                return `
+                <div class="bg-white border rounded-xl p-4 shadow-sm text-sm space-y-3">
+                    <div class="flex justify-between items-start border-b pb-3">
+                        <div>
+                            <span class="font-bold text-gray-900">Order ID: ${o.id}</span>
+                            <p class="text-xs text-gray-400">${new Date(o.created_at).toLocaleString()}</p>
+                        </div>
+                        <div class="text-right flex flex-col items-end gap-1">
+                            <span class="px-2 py-0.5 rounded text-xs font-semibold ${orderBadgeColor}">Tracking: ${o.order_status || 'Order Placed'}</span>
+                            <span class="px-2 py-0.5 rounded text-xs font-semibold ${payStatusColor}">Payment: ${o.payment_status || 'Pending'}</span>
+                        </div>
+                    </div>
+
+                    <div class="text-xs text-gray-600 whitespace-pre-line">${o.items}</div>
+
+                    <div class="flex justify-between items-center text-xs font-semibold pt-2 border-t">
+                        <span>Total: <strong class="text-orange-500 text-sm">NPR ${o.total}</strong> (${o.payment_method})</span>
+                        ${isEsewa && o.payment_status !== 'Verified' ? `
+                            <button onclick="openEsewaModal('${o.id}')" class="bg-green-600 text-white px-3 py-1.5 rounded-md hover:bg-green-700">
+                                ${o.transaction_id ? 'Update Transaction ID' : 'Pay via eSewa QR'}
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        /* Filter & Store Views */
         let activeCategory = 'all';
         function applyActiveFilter() {
             return activeCategory === 'all' ? products : products.filter(p => p.category === activeCategory);
@@ -348,6 +570,7 @@
 
             document.getElementById('detail-qty').innerText = '1';
             document.getElementById('view-grid').classList.add('hidden');
+            document.getElementById('view-orders').classList.add('hidden');
             document.getElementById('view-detail').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -355,6 +578,7 @@
         function backToStore() {
             currentProductId = null;
             document.getElementById('view-detail').classList.add('hidden');
+            document.getElementById('view-orders').classList.add('hidden');
             document.getElementById('view-grid').classList.remove('hidden');
         }
 
@@ -387,7 +611,7 @@
             if (!toast) {
                 toast = document.createElement('div');
                 toast.id = 'cart-toast';
-                toast.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-sm font-medium px-5 py-3 rounded-full shadow-lg z-[70] flex items-center gap-2 opacity-0 transition-opacity duration-300 pointer-events-none';
+                toast.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-sm font-medium px-5 py-3 rounded-full shadow-lg z-[90] flex items-center gap-2 opacity-0 transition-opacity duration-300 pointer-events-none';
                 document.body.appendChild(toast);
             }
             toast.innerHTML = `<i class="fa-solid fa-circle-check text-green-400"></i> ${message}`;
@@ -457,6 +681,33 @@
             document.getElementById('pay-esewa').classList.toggle('selected', method === 'esewa');
         }
 
+        function openEsewaModal(orderId) {
+            currentEsewaOrderId = orderId;
+            document.getElementById('esewa-tx-input').value = '';
+            document.getElementById('esewa-modal').classList.remove('hidden');
+            document.getElementById('esewa-modal').classList.add('flex');
+        }
+
+        function closeEsewaModal() {
+            document.getElementById('esewa-modal').classList.add('hidden');
+            document.getElementById('esewa-modal').classList.remove('flex');
+        }
+
+        async function submitEsewaTransaction() {
+            const txId = document.getElementById('esewa-tx-input').value.trim();
+            if (!txId) { alert('Please enter your eSewa Transaction/Reference ID.'); return; }
+            try {
+                await updateOrderDetails(currentEsewaOrderId, {
+                    transaction_id: txId,
+                    payment_status: 'Payment Processing'
+                });
+                closeEsewaModal();
+                showToast('Transaction ID submitted. Verification pending!');
+            } catch (err) {
+                alert('Failed to submit transaction details.');
+            }
+        }
+
         function openConfirmModal(message) {
             document.getElementById('confirm-message').innerText = message;
             const modal = document.getElementById('confirm-modal');
@@ -469,6 +720,8 @@
 
         async function handleCheckout() {
             if (cart.length === 0) { alert('Add items to your cart before proceeding.'); return; }
+            if (!currentUser) { openAuthModal('login'); return; }
+
             const name = document.getElementById('checkout-name').value.trim();
             const phone = document.getElementById('checkout-phone').value.trim();
             const email = document.getElementById('checkout-email').value.trim();
@@ -487,9 +740,15 @@
             const paymentLabel = selectedPayment === 'esewa' ? 'eSewa' : 'Cash on Delivery';
 
             const payload = {
-                order_id: orderId, name, phone, email, address,
-                delivery_location: rate.city, payment_method: paymentLabel,
-                items: itemsSummary, subtotal, delivery_charge: rate.charge, total
+                id: orderId,
+                user_id: currentUser.id,
+                name, phone, email, address,
+                delivery_location: rate.city,
+                payment_method: paymentLabel,
+                items: itemsSummary,
+                subtotal, delivery_charge: rate.charge, total,
+                payment_status: selectedPayment === 'esewa' ? 'Pending' : 'Cash on Delivery',
+                order_status: 'Order Placed'
             };
 
             const btn = document.getElementById('place-order-btn');
@@ -497,30 +756,27 @@
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Placing order...`;
 
             try {
-                await fetch(FORMSPREE_ENDPOINT, {
+                await createOrder(payload);
+                fetch(FORMSPREE_ENDPOINT, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                     body: JSON.stringify(payload)
-                });
+                }).catch(() => {});
             } catch (err) {
-                console.error('Order submission failed:', err);
+                console.error('Order creation failed:', err);
             }
 
             btn.disabled = false;
             btn.innerHTML = `<i class="fa-solid fa-lock text-sm"></i> Place Order`;
 
             cart = [];
-            document.getElementById('checkout-name').value = '';
-            document.getElementById('checkout-phone').value = '';
-            document.getElementById('checkout-email').value = '';
-            document.getElementById('checkout-address').value = '';
             updateCartTotals();
             closeCart();
 
             if (selectedPayment === 'esewa') {
-                openConfirmModal(`Order ${orderId} placed. Check your email in a few minutes — we'll send the eSewa payment QR code along with your delivery date and other order info.`);
+                openEsewaModal(orderId);
             } else {
-                openConfirmModal(`Order ${orderId} placed with Cash on Delivery. Check your email in a few minutes for your delivery date and other order info.`);
+                openConfirmModal(`Order ${orderId} placed with Cash on Delivery. Track its status anytime under 'My Orders'.`);
             }
         }
     </script>
