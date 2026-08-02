@@ -1,363 +1,209 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechStore Nepal</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/x-icon" href="https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSKH-sscrTgRsMN3XQQunQr_hHRwaqaoPg9V-DttcJ4nZ02fOjS">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tech Store NP</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans pb-12">
+<body>
 
-    <!-- NAVBAR -->
-    <header class="bg-white border-b sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <i class="fa-solid fa-bolt text-blue-600 text-2xl"></i>
-                <span class="font-bold text-xl tracking-tight">TechStore NP</span>
-            </div>
-            
-            <div class="flex items-center gap-4">
-                <button onclick="toggleAccountDrawer()" class="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-blue-600">
-                    <i class="fa-solid fa-user-circle text-xl"></i>
-                    <span id="user-login-label">My Orders</span>
-                </button>
-                <button onclick="toggleCartDrawer()" class="relative p-2 text-gray-700 hover:text-blue-600">
-                    <i class="fa-solid fa-cart-shopping text-xl"></i>
-                    <span id="cart-count" class="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- CATALOG GRID -->
-    <main class="max-w-7xl mx-auto px-4 py-8">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold">Featured Products</h1>
-            <span id="catalog-count" class="text-xs text-gray-500">Loading catalog...</span>
-        </div>
-        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
-    </main>
-
-    <!-- CART DRAWER -->
-    <div id="cart-drawer" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="toggleCartDrawer()"></div>
-        <div class="absolute right-0 top-0 bottom-0 w-full max-w-md bg-white p-6 shadow-2xl flex flex-col justify-between">
-            <div>
-                <div class="flex justify-between items-center border-b pb-4 mb-4">
-                    <h2 class="text-lg font-bold">Shopping Cart</h2>
-                    <button onclick="toggleCartDrawer()" class="text-gray-400 hover:text-black"><i class="fa-solid fa-xmark text-xl"></i></button>
-                </div>
-                <div id="cart-items" class="space-y-4 max-h-[60vh] overflow-y-auto"></div>
-            </div>
-
-            <div class="border-t pt-4 space-y-3">
-                <div class="flex justify-between text-base font-bold">
-                    <span>Total Amount:</span>
-                    <span id="cart-total-display">NPR 0</span>
-                </div>
-                <button onclick="openCheckoutModal()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-blue-700">Proceed to Checkout</button>
-            </div>
-        </div>
+  <!-- Header / Navigation -->
+  <header class="navbar">
+    <div class="logo">
+      <a href="index.html"><h2>Tech Store <span>NP</span></h2></a>
+    </div>
+    
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search products..." onkeyup="filterProducts()" />
     </div>
 
-    <!-- ACCOUNT / ORDERS DRAWER -->
-    <div id="account-drawer" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="toggleAccountDrawer()"></div>
-        <div class="absolute right-0 top-0 bottom-0 w-full max-w-md bg-white p-6 shadow-2xl flex flex-col justify-between">
-            <div>
-                <div class="flex justify-between items-center border-b pb-4 mb-4">
-                    <h2 class="text-lg font-bold">My Account & Orders</h2>
-                    <button onclick="toggleAccountDrawer()" class="text-gray-400 hover:text-black"><i class="fa-solid fa-xmark text-xl"></i></button>
-                </div>
-
-                <div id="user-lookup-form" class="space-y-3 mb-6">
-                    <p class="text-xs text-gray-500">Enter your phone number to track active orders.</p>
-                    <div class="flex gap-2">
-                        <input type="tel" id="lookup-phone" placeholder="98XXXXXXXX" class="flex-1 border rounded-lg p-2 text-sm outline-none">
-                        <button onclick="lookupUserOrders()" class="bg-blue-600 text-white px-4 text-xs font-bold rounded-lg hover:bg-blue-700">Search</button>
-                    </div>
-                </div>
-
-                <div id="user-orders-list" class="space-y-4 max-h-[65vh] overflow-y-auto"></div>
-            </div>
-
-            <button onclick="handleLogout()" class="w-full bg-gray-100 text-gray-600 py-2 rounded-xl text-xs font-semibold hover:bg-gray-200">Logout Account Session</button>
-        </div>
+    <div class="nav-actions">
+      <button id="userAuthBtn" class="nav-btn">Account</button>
+      <button id="cartBtn" class="nav-btn" onclick="openCartDrawer()">
+        Cart (<span id="cartCount">0</span>)
+      </button>
     </div>
+  </header>
 
-    <!-- CHECKOUT MODAL -->
-    <div id="checkout-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold">Checkout Order</h3>
-                <button onclick="closeCheckoutModal()" class="text-gray-400 hover:text-black"><i class="fa-solid fa-xmark"></i></button>
-            </div>
+  <!-- Hero Section -->
+  <section class="hero">
+    <h1>Welcome to Tech Store NP</h1>
+    <p>Find the best laptops, accessories, and tech gadgets in Biratnagar!</p>
+  </section>
 
-            <form onsubmit="handlePlaceOrder(event)" class="space-y-4">
-                <div>
-                    <label class="text-xs font-semibold block mb-1">Full Name</label>
-                    <input type="text" id="cust-name" required placeholder="John Doe" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="text-xs font-semibold block mb-1">Phone Number (Required for Tracking)</label>
-                    <input type="tel" id="cust-phone" required placeholder="98XXXXXXXX" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="text-xs font-semibold block mb-1">Delivery Address</label>
-                    <input type="text" id="cust-address" required placeholder="Street / Ward No. / Landmark" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-
-                <div>
-                    <label class="text-xs font-semibold block mb-2">Payment Method</label>
-                    <div class="grid grid-cols-2 gap-3">
-                        <label class="border rounded-xl p-3 flex items-center gap-2 cursor-pointer hover:border-blue-500">
-                            <input type="radio" name="pay_method" value="cod" checked onchange="togglePaymentUI()">
-                            <span class="text-xs font-bold">Cash on Delivery</span>
-                        </label>
-                        <label class="border rounded-xl p-3 flex items-center gap-2 cursor-pointer hover:border-blue-500">
-                            <input type="radio" name="pay_method" value="esewa" onchange="togglePaymentUI()">
-                            <span class="text-xs font-bold text-green-600">eSewa Mobile QR</span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- ESEWA QR BLOCK -->
-                <div id="esewa-qr-block" class="hidden border-2 border-dashed border-green-500 rounded-xl p-4 bg-green-50 text-center space-y-3">
-                    <p class="text-xs font-semibold text-green-800">Scan QR Code using your eSewa App</p>
-                    
-                    <div class="w-44 h-44 bg-white mx-auto border flex flex-col items-center justify-center rounded-lg shadow-sm">
-                        <i class="fa-solid fa-qrcode text-6xl text-green-600 mb-1"></i>
-                        <span class="text-[10px] text-gray-400 font-mono">YOUR ESEWA QR HERE</span>
-                    </div>
-
-                    <p class="text-[11px] text-gray-600">Enter your Transaction Reference ID below after payment:</p>
-                    <input type="text" id="cust-tx-ref" placeholder="eSewa Transaction ID" class="w-full border rounded-lg p-2 text-sm bg-white outline-none">
-                </div>
-
-                <button type="submit" id="btn-submit-order" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl text-sm hover:bg-blue-700">Confirm Order</button>
-            </form>
-        </div>
+  <!-- Main Product Showcase -->
+  <main class="container">
+    <h2>Featured Products</h2>
+    <div id="productGrid" class="product-grid">
+      <p class="loading">Loading products...</p>
     </div>
+  </main>
 
-    <!-- Supabase JS SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="shared.js"></script>
-    <script>
-        let catalog = [];
-        let cart = [];
-        const STATUS_STEPS = ['Order Placed', 'Processing', 'Confirmed', 'Shipped', 'Out for Delivery', 'Delivered'];
+  <!-- Cart Slide-out Drawer -->
+  <div id="cartDrawer" class="cart-drawer">
+    <div class="drawer-header">
+      <h3>Your Cart</h3>
+      <button onclick="closeCartDrawer()" class="close-btn">&times;</button>
+    </div>
+    <div id="cartItems" class="drawer-body"></div>
+    <div class="drawer-footer">
+      <div class="total-row">
+        <span>Total:</span>
+        <strong id="cartTotal">Rs. 0</strong>
+      </div>
+      <button class="btn-primary" onclick="openCheckoutModal()">Proceed to Checkout</button>
+    </div>
+  </div>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            subscribeProducts(list => {
-                catalog = list;
-                renderCatalog();
-            });
+  <!-- Auth / Login Modal (Email & Password) -->
+  <div id="authModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <button class="close-btn" onclick="closeAuthModal()">&times;</button>
+      <h2 id="authTitle">Sign In</h2>
+      
+      <form id="authForm" onsubmit="handleAuthSubmit(event)">
+        <div class="input-group">
+          <label for="authEmail">Email Address</label>
+          <input type="email" id="authEmail" placeholder="name@example.com" required />
+        </div>
+        
+        <div class="input-group">
+          <label for="authPassword">Password</label>
+          <input type="password" id="authPassword" placeholder="••••••••" required />
+        </div>
 
-            const savedUser = getStoredUser();
-            if (savedUser) {
-                document.getElementById('user-login-label').innerText = savedUser.phone;
-                document.getElementById('lookup-phone').value = savedUser.phone;
-            }
-        });
+        <button type="submit" class="btn-primary" id="authSubmitBtn">Sign In</button>
+      </form>
 
-        function renderCatalog() {
-            const grid = document.getElementById('product-grid');
-            document.getElementById('catalog-count').innerText = `${catalog.length} items available`;
-            grid.innerHTML = catalog.map(p => `
-                <div class="bg-white rounded-2xl p-4 border shadow-sm flex flex-col justify-between">
-                    <div>
-                        <img src="${p.image}" class="w-full h-48 object-cover rounded-xl mb-3" onerror="this.src='https://via.placeholder.com/300'">
-                        <span class="text-[10px] uppercase font-bold text-blue-600 tracking-wider">${p.brand || 'Tech'}</span>
-                        <h3 class="font-bold text-sm text-gray-900 mt-0.5">${p.title}</h3>
-                        <p class="text-xs text-gray-500 mt-1 line-clamp-2">${p.description || ''}</p>
-                    </div>
-                    <div class="mt-4 flex items-center justify-between">
-                        <div>
-                            <span class="text-sm font-bold text-gray-900">NPR ${p.price}</span>
-                            ${p.old_price ? `<span class="text-xs text-gray-400 line-through ml-1">NPR ${p.old_price}</span>` : ''}
-                        </div>
-                        <button onclick="addToCart('${p.id}')" class="bg-blue-600 text-white p-2 rounded-lg text-xs hover:bg-blue-700"><i class="fa-solid fa-plus mr-1"></i>Add</button>
-                    </div>
-                </div>
-            `).join('');
-        }
+      <p class="auth-toggle">
+        <span id="authToggleText">Don't have an account?</span> 
+        <a href="#" onclick="toggleAuthMode(event)" id="authToggleLink">Sign Up</a>
+      </p>
+    </div>
+  </div>
 
-        function addToCart(id) {
-            const item = catalog.find(p => p.id === id);
-            if (!item) return;
-            const existing = cart.find(c => c.id === id);
-            if (existing) {
-                existing.qty++;
-            } else {
-                cart.push({ ...item, qty: 1 });
-            }
-            updateCartUI();
-            toggleCartDrawer(true);
-        }
+  <!-- Checkout Modal -->
+  <div id="checkoutModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <button class="close-btn" onclick="closeCheckoutModal()">&times;</button>
+      <h2>Checkout</h2>
+      <form id="checkoutForm" onsubmit="handleCheckout(event)">
+        <div class="input-group">
+          <label for="custName">Full Name</label>
+          <input type="text" id="custName" required />
+        </div>
+        <div class="input-group">
+          <label for="custPhone">Phone Number</label>
+          <input type="tel" id="custPhone" required />
+        </div>
+        <div class="input-group">
+          <label for="custAddress">Delivery Address</label>
+          <input type="text" id="custAddress" required />
+        </div>
+        <div class="input-group">
+          <label for="custCity">City</label>
+          <input type="text" id="custCity" value="Biratnagar" required />
+        </div>
+        <button type="submit" class="btn-primary">Place Order (Cash on Delivery)</button>
+      </form>
+    </div>
+  </div>
 
-        function updateCartUI() {
-            document.getElementById('cart-count').innerText = cart.reduce((acc, c) => acc + c.qty, 0);
-            const container = document.getElementById('cart-items');
-            container.innerHTML = cart.map(c => `
-                <div class="flex items-center justify-between border-b pb-3">
-                    <div class="flex items-center gap-3">
-                        <img src="${c.image}" class="w-12 h-12 object-cover rounded-lg">
-                        <div>
-                            <p class="text-xs font-bold text-gray-800">${c.title}</p>
-                            <p class="text-xs text-gray-500">NPR ${c.price} x ${c.qty}</p>
-                        </div>
-                    </div>
-                    <button onclick="removeFromCart('${c.id}')" class="text-red-500 text-xs font-bold">Remove</button>
-                </div>
-            `).join('');
+  <!-- JS Dependencies -->
+  <script src="shared.js"></script>
+  <script>
+    let allProducts = [];
 
-            const total = cart.reduce((acc, c) => acc + (c.price * c.qty), 0);
-            document.getElementById('cart-total-display').innerText = `NPR ${total}`;
-        }
+    async function loadProducts() {
+      const grid = document.getElementById('productGrid');
+      const { data, error } = await supabaseClient
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-        function removeFromCart(id) {
-            cart = cart.filter(c => c.id !== id);
-            updateCartUI();
-        }
+      if (error) {
+        grid.innerHTML = `<p class="error">Error loading products.</p>`;
+        return;
+      }
 
-        function toggleCartDrawer(open) {
-            document.getElementById('cart-drawer').classList.toggle('hidden', open === undefined ? !document.getElementById('cart-drawer').classList.contains('hidden') : !open);
-        }
+      allProducts = data || [];
+      renderProducts(allProducts);
+    }
 
-        function toggleAccountDrawer() {
-            const drawer = document.getElementById('account-drawer');
-            drawer.classList.toggle('hidden');
-            if (!drawer.classList.contains('hidden')) {
-                const user = getStoredUser();
-                if (user) lookupUserOrders(user.phone);
-            }
-        }
+    function renderProducts(products) {
+      const grid = document.getElementById('productGrid');
+      if (products.length === 0) {
+        grid.innerHTML = `<p>No products available right now.</p>`;
+        return;
+      }
 
-        function togglePaymentUI() {
-            const isEsewa = document.querySelector('input[name="pay_method"]:checked').value === 'esewa';
-            document.getElementById('esewa-qr-block').classList.toggle('hidden', !isEsewa);
-        }
+      grid.innerHTML = products.map(p => `
+        <div class="product-card">
+          <img src="${p.image || 'https://via.placeholder.com/200'}" alt="${p.title}" />
+          <h3>${p.title}</h3>
+          <p class="brand">${p.brand || ''}</p>
+          <div class="price-row">
+            <span class="price">Rs. ${p.price.toLocaleString()}</span>
+            ${p.old_price ? `<span class="old-price">Rs. ${p.old_price.toLocaleString()}</span>` : ''}
+          </div>
+          <button onclick='addToCart(${JSON.stringify(p)})' class="btn-secondary">Add to Cart</button>
+        </div>
+      `).join('');
+    }
 
-        function openCheckoutModal() {
-            if (cart.length === 0) { alert('Your cart is empty!'); return; }
-            toggleCartDrawer(false);
-            const savedUser = getStoredUser();
-            if (savedUser) {
-                document.getElementById('cust-name').value = savedUser.name || '';
-                document.getElementById('cust-phone').value = savedUser.phone || '';
-            }
-            document.getElementById('checkout-modal').classList.remove('hidden');
-        }
+    function filterProducts() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = allProducts.filter(p => p.title.toLowerCase().includes(query));
+      renderProducts(filtered);
+    }
 
-        function closeCheckoutModal() {
-            document.getElementById('checkout-modal').classList.add('hidden');
-        }
+    function openCheckoutModal() {
+      if (cart.length === 0) {
+        alert("Your cart is empty!");
+        return;
+      }
+      closeCartDrawer();
+      document.getElementById('checkoutModal').classList.remove('hidden');
+    }
 
-        async function handlePlaceOrder(e) {
-            e.preventDefault();
-            const payMethod = document.querySelector('input[name="pay_method"]:checked').value;
-            const name = document.getElementById('cust-name').value.trim();
-            const phone = document.getElementById('cust-phone').value.trim();
-            
-            setStoredUser({ name, phone });
-            document.getElementById('user-login-label').innerText = phone;
+    function closeCheckoutModal() {
+      document.getElementById('checkoutModal').classList.add('hidden');
+    }
 
-            const total = cart.reduce((acc, c) => acc + (c.price * c.qty), 0);
-            const payload = {
-                name,
-                phone,
-                address: document.getElementById('cust-address').value.trim(),
-                city: 'Biratnagar',
-                items: cart,
-                total,
-                paymentMethod: payMethod,
-                transactionRef: payMethod === 'esewa' ? document.getElementById('cust-tx-ref').value.trim() : ''
-            };
+    async function handleCheckout(e) {
+      e.preventDefault();
 
-            const btn = document.getElementById('btn-submit-order');
-            btn.disabled = true;
-            btn.innerText = 'Processing Order...';
+      const orderData = {
+        customer_name: document.getElementById('custName').value,
+        customer_phone: document.getElementById('custPhone').value,
+        customer_address: document.getElementById('custAddress').value,
+        city: document.getElementById('custCity').value,
+        items: cart,
+        total_amount: cart.reduce((sum, i) => sum + (i.price * i.quantity), 0),
+        payment_method: 'cod',
+        payment_status: 'pending',
+        order_status: 'Order Placed'
+      };
 
-            try {
-                const order = await createOrderDoc(payload);
-                alert(`Order placed successfully! Track order using ID: ${order.id.slice(0, 8)}`);
-                cart = [];
-                updateCartUI();
-                closeCheckoutModal();
-                toggleAccountDrawer();
-                lookupUserOrders(phone);
-            } catch (err) {
-                alert('Could not place order: ' + err.message);
-            }
-            btn.disabled = false;
-            btn.innerText = 'Confirm Order';
-        }
+      const { data, error } = await supabaseClient.from('orders').insert([orderData]);
 
-        async function lookupUserOrders(overridePhone) {
-            const phone = overridePhone || document.getElementById('lookup-phone').value.trim();
-            if (!phone) { alert('Please enter a phone number'); return; }
-            
-            setStoredUser({ phone });
-            document.getElementById('user-login-label').innerText = phone;
+      if (error) {
+        alert("Failed to place order: " + error.message);
+      } else {
+        alert("Order placed successfully!");
+        cart = [];
+        updateCartUI();
+        closeCheckoutModal();
+      }
+    }
 
-            const list = document.getElementById('user-orders-list');
-            list.innerHTML = `<p class="text-xs text-gray-400">Loading orders...</p>`;
-
-            try {
-                const orders = await fetchUserOrders(phone);
-                if (!orders.length) {
-                    list.innerHTML = `<p class="text-xs text-gray-400">No active orders found for ${phone}.</p>`;
-                    return;
-                }
-
-                list.innerHTML = orders.map(ord => {
-                    const stepIdx = STATUS_STEPS.indexOf(ord.order_status);
-                    const progressPct = Math.max(10, ((stepIdx + 1) / STATUS_STEPS.length) * 100);
-
-                    return `
-                    <div class="bg-gray-50 border rounded-xl p-4 text-xs space-y-3">
-                        <div class="flex justify-between items-start border-b pb-2">
-                            <div>
-                                <span class="font-bold text-blue-600">ORDER #${ord.id.slice(0, 8)}</span>
-                                <p class="text-[10px] text-gray-400">${new Date(ord.created_at).toLocaleDateString()}</p>
-                            </div>
-                            <div class="text-right">
-                                <span class="font-bold text-gray-800">NPR ${ord.total_amount}</span>
-                                <p class="text-[10px] uppercase font-bold text-gray-500">${ord.payment_method} • ${ord.payment_status.replace('_', ' ')}</p>
-                            </div>
-                        </div>
-
-                        <div>
-                            <div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1">
-                                <span>Placed</span>
-                                <span>Shipped</span>
-                                <span>Delivered</span>
-                            </div>
-                            <div class="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
-                                <div class="bg-blue-600 h-full transition-all duration-300" style="width: ${progressPct}%"></div>
-                            </div>
-                        </div>
-
-                        <div class="bg-white p-2 rounded-lg border flex justify-between items-center">
-                            <span>Status: <b class="text-blue-600">${ord.order_status}</b></span>
-                            ${ord.payment_method === 'esewa' && ord.payment_status === 'on_hold' ? `<span class="text-[10px] text-amber-600"><i class="fa-solid fa-clock"></i> Verifying eSewa</span>` : ''}
-                        </div>
-                    </div>`;
-                }).join('');
-            } catch (err) {
-                list.innerHTML = `<p class="text-xs text-red-500">Failed to load orders.</p>`;
-            }
-        }
-
-        function handleLogout() {
-            logoutUser();
-            document.getElementById('user-login-label').innerText = 'My Orders';
-            document.getElementById('user-orders-list').innerHTML = '';
-            document.getElementById('lookup-phone').value = '';
-            alert('Logged out from this device.');
-        }
-    </script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadProducts();
+      setupRealtimeSubscriptions(() => loadProducts());
+    });
+  </script>
 </body>
 </html>
