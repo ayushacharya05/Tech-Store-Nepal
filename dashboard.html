@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -306,8 +307,8 @@
                 renderEsewaSettings();
                 alert('eSewa payment settings saved.');
             } catch (err) {
-                console.error(err);
-                alert('Could not save eSewa settings.');
+                console.error('Save eSewa settings failed:', err);
+                alert('Could not save eSewa settings: ' + (err.message || JSON.stringify(err)));
             }
         }
 
@@ -369,13 +370,13 @@
         async function changePaymentStatus(orderId, status) {
             try {
                 await updateOrderDetails(orderId, { payment_status: status });
-            } catch (err) { alert('Failed to update payment status.'); }
+            } catch (err) { console.error(err); alert('Failed to update payment status: ' + (err.message || JSON.stringify(err))); }
         }
 
         async function changeOrderStatus(orderId, status) {
             try {
                 await updateOrderDetails(orderId, { order_status: status });
-            } catch (err) { alert('Failed to update order status.'); }
+            } catch (err) { console.error(err); alert('Failed to update order status: ' + (err.message || JSON.stringify(err))); }
         }
 
         function populateCategorySelect() {
@@ -452,7 +453,7 @@
                 resetProductForm();
             } catch (err) {
                 console.error(err);
-                alert('Could not save product.');
+                alert('Could not save product: ' + (err.message || JSON.stringify(err)));
             }
             btn.disabled = false;
             btn.innerText = 'Save Product';
@@ -489,7 +490,7 @@
                 await deleteProductDoc(id);
             } catch (err) {
                 console.error(err);
-                alert('Could not delete product.');
+                alert('Could not delete product: ' + (err.message || JSON.stringify(err)));
             }
         }
 
@@ -524,7 +525,7 @@
                 document.getElementById('cat-label').value = '';
             } catch (err) {
                 console.error(err);
-                alert('Could not save category.');
+                alert('Could not save category: ' + (err.message || JSON.stringify(err)));
             }
         }
 
@@ -540,7 +541,7 @@
                 await saveCategoriesDoc(updated);
             } catch (err) {
                 console.error(err);
-                alert('Could not delete category.');
+                alert('Could not delete category: ' + (err.message || JSON.stringify(err)));
             }
         }
 
@@ -563,7 +564,12 @@
             if (newCharge !== null && !isNaN(newCharge) && newCharge !== '') {
                 const updated = [...deliveryRates];
                 updated[index] = { ...updated[index], charge: parseFloat(newCharge) };
-                await saveDeliveryDoc(updated);
+                try {
+                    await saveDeliveryDoc(updated);
+                } catch (err) {
+                    console.error(err);
+                    alert('Could not update delivery charge: ' + (err.message || JSON.stringify(err)));
+                }
             }
         }
 
@@ -574,14 +580,24 @@
             const charge = prompt('Delivery charge (NPR):', '150');
             if (charge === null || isNaN(charge) || charge === '') return;
             const updated = [...deliveryRates, { key: slugify(city) + '-' + Date.now(), city, province, charge: parseFloat(charge) }];
-            await saveDeliveryDoc(updated);
+            try {
+                await saveDeliveryDoc(updated);
+            } catch (err) {
+                console.error(err);
+                alert('Could not add delivery location: ' + (err.message || JSON.stringify(err)));
+            }
         }
 
         async function deleteDeliveryLocation(index) {
             if (deliveryRates.length <= 1) { alert('At least one location must remain.'); return; }
             if (!confirm(`Remove "${deliveryRates[index].city}"?`)) return;
             const updated = deliveryRates.filter((_, i) => i !== index);
-            await saveDeliveryDoc(updated);
+            try {
+                await saveDeliveryDoc(updated);
+            } catch (err) {
+                console.error(err);
+                alert('Could not remove delivery location: ' + (err.message || JSON.stringify(err)));
+            }
         }
     </script>
 </body>
