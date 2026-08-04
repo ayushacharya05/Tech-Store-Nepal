@@ -87,7 +87,7 @@
 
         <!-- PRODUCT DETAIL VIEW -->
         <div id="view-detail" class="hidden">
-            <button onclick="backToStore()" class="text-sm text-gray-500 hover:text-blue-600 mb-4 flex items-center gap-2">
+            <button onclick="history.back()" class="text-sm text-gray-500 hover:text-blue-600 mb-4 flex items-center gap-2">
                 <i class="fa-solid fa-arrow-left"></i> Back to products
             </button>
 
@@ -162,7 +162,7 @@
 
         <!-- USER ORDERS VIEW -->
         <div id="view-orders" class="hidden">
-            <button onclick="backToStore()" class="text-sm text-gray-500 hover:text-blue-600 mb-4 flex items-center gap-2">
+            <button onclick="history.back()" class="text-sm text-gray-500 hover:text-blue-600 mb-4 flex items-center gap-2">
                 <i class="fa-solid fa-arrow-left"></i> Back to store
             </button>
             <h1 class="text-2xl font-bold mb-6">My Orders</h1>
@@ -446,12 +446,13 @@
             showToast('Logged out');
         }
 
-        function openUserOrdersView() {
+        function openUserOrdersView(fromPop) {
             if (!currentUser) { openAuthModal('login'); return; }
             document.getElementById('view-home-extras').classList.add('hidden');
             document.getElementById('view-grid').classList.add('hidden');
             document.getElementById('view-detail').classList.add('hidden');
             document.getElementById('view-orders').classList.remove('hidden');
+            if (!fromPop) history.pushState({ view: 'orders' }, '');
 
             if (unsubUserOrders) unsubUserOrders();
             unsubUserOrders = subscribeUserOrders(currentUser.id, orders => {
@@ -616,7 +617,7 @@
             renderProducts(applyActiveFilter());
         }
 
-        function viewProduct(id) {
+        function viewProduct(id, fromPop) {
             const p = products.find(x => x.id === id);
             if (!p) return;
             currentProductId = id;
@@ -659,6 +660,7 @@
             document.getElementById('view-orders').classList.add('hidden');
             document.getElementById('view-detail').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (!fromPop) history.pushState({ view: 'detail', id }, '');
         }
 
         function backToStore() {
@@ -668,6 +670,18 @@
             document.getElementById('view-orders').classList.add('hidden');
             document.getElementById('view-grid').classList.remove('hidden');
         }
+
+        window.addEventListener('popstate', (e) => {
+            const state = e.state;
+            if (state && state.view === 'detail' && state.id) {
+                viewProduct(state.id, true);
+            } else if (state && state.view === 'orders') {
+                openUserOrdersView(true);
+            } else {
+                backToStore();
+            }
+        });
+        history.replaceState({ view: 'grid' }, '');
 
         function changeDetailQty(delta) {
             detailQty = Math.max(1, detailQty + delta);
