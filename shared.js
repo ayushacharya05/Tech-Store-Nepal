@@ -32,7 +32,7 @@ const PAYMENT_STATUSES = [
 const ORDER_STATUSES = [
     { key: 'Order Placed', label: 'Order Placed', color: 'blue' },
     { key: 'Processing', label: 'Processing Your Order', color: 'amber' },
-    { key: 'Packed', label: 'Payment Received – Order Packed', color: 'amber' },
+    { key: 'Packed', label: 'Order Packed', color: 'amber' },
     { key: 'Shipped', label: 'Shipped', color: 'indigo' },
     { key: 'Near You', label: 'Near Your Location', color: 'indigo' },
     { key: 'Out for Delivery', label: 'Out for Delivery – Attempting Today', color: 'purple' },
