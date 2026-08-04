@@ -69,7 +69,16 @@
             </div>
         </div>
 
-        <div id="filter-bar" class="flex overflow-x-auto gap-2 pb-4 mb-6 text-sm font-medium no-scrollbar"></div>
+        <div class="flex items-center justify-between gap-3 flex-wrap mb-1">
+            <div id="filter-bar" class="flex overflow-x-auto gap-2 pb-4 text-sm font-medium no-scrollbar flex-1"></div>
+            <div class="pb-4 shrink-0">
+                <select id="sort-select" onchange="handleSortChange(this.value)" class="text-xs sm:text-sm border border-gray-200 bg-white rounded-lg px-3 py-2 outline-none font-medium text-gray-700">
+                    <option value="best">Sort: Best Match</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
+                </select>
+            </div>
+        </div>
 
         <div id="view-grid">
             <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3"></div>
@@ -511,6 +520,7 @@
         /* Filter & Store Views */
         let activeCategory = 'all';
         let searchQuery = '';
+        let sortOrder = 'best';
 
         function applyActiveFilter() {
             let list = activeCategory === 'all' ? products : products.filter(p => p.category === activeCategory);
@@ -522,7 +532,15 @@
                     categoryLabel(p.category).toLowerCase().includes(q)
                 );
             }
+            list = [...list];
+            if (sortOrder === 'price_asc') list.sort((a, b) => (a.price || 0) - (b.price || 0));
+            else if (sortOrder === 'price_desc') list.sort((a, b) => (b.price || 0) - (a.price || 0));
             return list;
+        }
+
+        function handleSortChange(value) {
+            sortOrder = value;
+            renderProducts(applyActiveFilter());
         }
 
         let searchDebounce = null;
