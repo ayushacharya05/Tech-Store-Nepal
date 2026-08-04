@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +7,6 @@
     <title>TechStore Nepal | Electronics & Accessories</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-      <link rel="icon" type="image/x-icon" href="https://play-lh.googleusercontent.com/R-m4sTm-WbWdq1OsVpAAQMVl7DpzN3ssF1MpxslpGS5-PmfO6LyeCWDBPUqijXdiHZrYVo4rNKBdu--lOEAMe-I=w240-h480-rw">
     <style>
         .pay-option.selected { border-color: #2563eb; background: #eff6ff; }
     </style>
@@ -543,7 +543,6 @@
                 <div onclick="viewProduct('${p.id}')" class="cursor-pointer bg-white overflow-hidden hover:shadow-lg transition rounded-sm flex flex-col justify-between">
                     <div class="aspect-square bg-gray-50 overflow-hidden relative">
                         <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover">
-                        ${p.brand ? `<span class="absolute top-2 left-2 bg-white/90 text-[9px] font-bold text-gray-700 px-1.5 py-0.5 rounded shadow-sm">${p.brand}</span>` : ''}
                     </div>
                     <div class="p-2.5">
                         <div class="flex items-start gap-1 mb-1.5">
