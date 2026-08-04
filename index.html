@@ -7,7 +7,6 @@
     <title>TechStore Nepal | Electronics & Accessories</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-          <link rel="icon" type="image/x-icon" href="https://play-lh.googleusercontent.com/R-m4sTm-WbWdq1OsVpAAQMVl7DpzN3ssF1MpxslpGS5-PmfO6LyeCWDBPUqijXdiHZrYVo4rNKBdu--lOEAMe-I=w240-h480-rw">
     <style>
         .pay-option.selected { border-color: #2563eb; background: #eff6ff; }
     </style>
@@ -22,7 +21,12 @@
                 <span class="text-xl font-bold tracking-tight text-gray-900">TechStore<span class="text-blue-600">NP</span></span>
             </div>
 
-            <div id="nav-categories" class="hidden md:flex items-center gap-6 text-sm font-medium"></div>
+            <div class="hidden md:flex flex-1 max-w-md mx-6">
+                <div class="relative w-full">
+                    <input id="nav-search-input" type="text" placeholder="Search products..." oninput="handleSearchInput(this.value)" onkeydown="if(event.key==='Enter'){this.blur()}" class="w-full border border-gray-200 bg-gray-50 rounded-full pl-10 pr-4 py-2 text-sm outline-none focus:border-blue-400 focus:bg-white">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                </div>
+            </div>
 
             <div class="flex items-center gap-4">
                 <div id="user-nav-area">
@@ -30,13 +34,16 @@
                         <i class="fa-solid fa-user mr-1"></i> Login / Register
                     </button>
                 </div>
-                <a href="dashboard.html" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md font-semibold text-gray-700">
-                    <i class="fa-solid fa-user-shield mr-1"></i> Admin
-                </a>
                 <div class="relative cursor-pointer" onclick="openCart()">
                     <i class="fa-solid fa-cart-shopping text-xl text-gray-700"></i>
                     <span id="cart-badge" class="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">0</span>
                 </div>
+            </div>
+        </div>
+        <div class="md:hidden px-4 pb-3">
+            <div class="relative w-full">
+                <input id="nav-search-input-mobile" type="text" placeholder="Search products..." oninput="handleSearchInput(this.value)" onkeydown="if(event.key==='Enter'){this.blur()}" class="w-full border border-gray-200 bg-gray-50 rounded-full pl-10 pr-4 py-2 text-sm outline-none focus:border-blue-400 focus:bg-white">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
             </div>
         </div>
     </nav>
@@ -323,8 +330,8 @@
 
         window.addEventListener('DOMContentLoaded', async () => {
             await ensureSeeded();
-            subscribeProducts(list => { products = list; renderNavCategories(); renderProducts(applyActiveFilter()); hideLoadingBanner(); });
-            subscribeCategories(list => { categories = list; renderNavCategories(); renderFilterBar(); });
+            subscribeProducts(list => { products = list; renderProducts(applyActiveFilter()); hideLoadingBanner(); });
+            subscribeCategories(list => { categories = list; renderFilterBar(); });
             subscribeDelivery(list => { deliveryRates = list; populateLocationOptions(); updateCartTotals(); });
             subscribePaymentQRConfig(config => {
                 esewaConfig = config;
@@ -502,19 +509,34 @@
 
         /* Filter & Store Views */
         let activeCategory = 'all';
+        let searchQuery = '';
+
         function applyActiveFilter() {
-            return activeCategory === 'all' ? products : products.filter(p => p.category === activeCategory);
+            let list = activeCategory === 'all' ? products : products.filter(p => p.category === activeCategory);
+            if (searchQuery.trim()) {
+                const q = searchQuery.trim().toLowerCase();
+                list = list.filter(p =>
+                    (p.title || '').toLowerCase().includes(q) ||
+                    (p.brand || '').toLowerCase().includes(q) ||
+                    categoryLabel(p.category).toLowerCase().includes(q)
+                );
+            }
+            return list;
+        }
+
+        let searchDebounce = null;
+        function handleSearchInput(value) {
+            searchQuery = value;
+            clearTimeout(searchDebounce);
+            searchDebounce = setTimeout(() => {
+                backToStore();
+                renderProducts(applyActiveFilter());
+            }, 200);
         }
 
         function categoryLabel(key) {
             const c = categories.find(x => x.key === key);
             return c ? c.label : key;
-        }
-
-        function renderNavCategories() {
-            const nav = document.getElementById('nav-categories');
-            nav.innerHTML = `<button onclick="filterCategory('all')" class="hover:text-blue-600">All Products</button>` +
-                categories.map(c => `<button onclick="filterCategory('${c.key}')" class="hover:text-blue-600">${c.label}</button>`).join('');
         }
 
         function renderFilterBar() {
@@ -566,6 +588,9 @@
         function filterCategory(cat) {
             backToStore();
             activeCategory = cat;
+            searchQuery = '';
+            const d = document.getElementById('nav-search-input'); if (d) d.value = '';
+            const m = document.getElementById('nav-search-input-mobile'); if (m) m.value = '';
             renderFilterBar();
             renderProducts(applyActiveFilter());
         }
