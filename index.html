@@ -350,13 +350,13 @@
 
     <!-- ORDER CONFIRMATION MODAL -->
     <!-- CATEGORY POPUP MODAL -->
-    <div id="category-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-[70] p-4 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-5xl max-h-[85vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
-            <div class="flex items-center justify-between p-4 border-b shrink-0">
-                <h2 id="category-modal-title" class="text-lg font-bold text-gray-900"></h2>
-                <button onclick="closeCategoryModal()" class="text-gray-400 hover:text-gray-700 text-xl px-2"><i class="fa-solid fa-xmark"></i></button>
+    <div id="category-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-[70] p-3 md:p-6 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-[1400px] h-[92vh] md:h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+            <div class="flex items-center justify-between p-5 border-b shrink-0">
+                <h2 id="category-modal-title" class="text-xl font-bold text-gray-900"></h2>
+                <button onclick="history.back()" class="text-gray-400 hover:text-gray-700 text-2xl px-2"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div id="category-modal-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 p-4 overflow-y-auto"></div>
+            <div id="category-modal-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-5 overflow-y-auto"></div>
         </div>
     </div>
 
@@ -622,7 +622,7 @@
                 categories.map(c => `<button onclick="filterCategory('${c.key}')" class="cat-pill ${activeCategory === c.key ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 border'} px-4 py-2 rounded-full whitespace-nowrap">${c.label}</button>`).join('');
         }
 
-        function selectCategoryFromCircle(key) {
+        function selectCategoryFromCircle(key, fromPop) {
             const list = key === 'all' ? products : products.filter(p => p.category === key);
             document.getElementById('category-modal-title').innerText = key === 'all' ? 'All Products' : categoryLabel(key);
             const grid = document.getElementById('category-modal-grid');
@@ -631,6 +631,7 @@
                 : `<p class="col-span-full text-center text-sm text-gray-400 py-12">No products in this category yet.</p>`;
             document.getElementById('category-modal').classList.remove('hidden');
             document.getElementById('category-modal').classList.add('flex');
+            if (!fromPop) history.pushState({ view: 'category', key }, '');
         }
 
         function closeCategoryModal() {
@@ -647,11 +648,11 @@
                 const img = sample ? sample.image : '';
                 const isActive = activeCategory === c.key;
                 return `
-                    <div onclick="selectCategoryFromCircle('${c.key}')" class="flex flex-col items-center gap-2 cursor-pointer shrink-0 w-20">
-                        <div class="w-16 h-16 rounded-full bg-gray-50 border ${isActive ? 'border-blue-500 border-2' : 'border-gray-100'} overflow-hidden flex items-center justify-center hover:border-blue-400 transition">
-                            ${img ? `<img src="${img}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-tag text-gray-300 text-xl"></i>`}
+                    <div onclick="selectCategoryFromCircle('${c.key}')" class="flex flex-col items-center gap-2 cursor-pointer shrink-0 w-28">
+                        <div class="w-24 h-24 rounded-full bg-gray-50 border ${isActive ? 'border-blue-500 border-2' : 'border-gray-100'} overflow-hidden flex items-center justify-center hover:border-blue-400 transition">
+                            ${img ? `<img src="${img}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-tag text-gray-300 text-2xl"></i>`}
                         </div>
-                        <span class="text-[11px] ${isActive ? 'text-blue-600 font-semibold' : 'text-gray-600'} text-center leading-tight">${c.label}</span>
+                        <span class="text-xs ${isActive ? 'text-blue-600 font-semibold' : 'text-gray-600'} text-center leading-tight">${c.label}</span>
                     </div>
                 `;
             }).join('');
@@ -798,10 +799,15 @@
         window.addEventListener('popstate', (e) => {
             const state = e.state;
             if (state && state.view === 'detail' && state.id) {
+                closeCategoryModal();
                 viewProduct(state.id, true);
             } else if (state && state.view === 'orders') {
+                closeCategoryModal();
                 openUserOrdersView(true);
+            } else if (state && state.view === 'category' && state.key) {
+                selectCategoryFromCircle(state.key, true);
             } else {
+                closeCategoryModal();
                 backToStore();
             }
         });
