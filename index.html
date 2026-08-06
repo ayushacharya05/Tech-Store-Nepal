@@ -95,8 +95,8 @@
                 <div class="flex items-center gap-3 bg-white border border-gray-100 rounded-xl p-3">
                     <i class="fa-solid fa-circle-check text-blue-600 text-xl w-6 text-center"></i>
                     <div>
-                        <p class="text-xs font-bold text-gray-800 leading-tight">Trusted Nepali</p>
-                        <p class="text-[11px] text-gray-500 leading-tight">Brand</p>
+                        <p class="text-xs font-bold text-gray-800 leading-tight">Trusted</p>
+                        <p class="text-[11px] text-gray-500 leading-tight">Brands</p>
                     </div>
                 </div>
             </div>
@@ -611,6 +611,12 @@
                 categories.map(c => `<button onclick="filterCategory('${c.key}')" class="cat-pill ${activeCategory === c.key ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 border'} px-4 py-2 rounded-full whitespace-nowrap">${c.label}</button>`).join('');
         }
 
+        function selectCategoryFromCircle(key) {
+            filterCategory(key);
+            const grid = document.getElementById('product-grid');
+            if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
         function renderCategoryCircles() {
             const wrap = document.getElementById('category-circles-wrap');
             const row = document.getElementById('category-circles');
@@ -618,12 +624,13 @@
             row.innerHTML = categories.map(c => {
                 const sample = products.find(p => p.category === c.key);
                 const img = sample ? sample.image : '';
+                const isActive = activeCategory === c.key;
                 return `
-                    <div onclick="filterCategory('${c.key}')" class="flex flex-col items-center gap-2 cursor-pointer shrink-0 w-20">
-                        <div class="w-16 h-16 rounded-full bg-gray-50 border border-gray-100 overflow-hidden flex items-center justify-center hover:border-blue-400 transition">
+                    <div onclick="selectCategoryFromCircle('${c.key}')" class="flex flex-col items-center gap-2 cursor-pointer shrink-0 w-20">
+                        <div class="w-16 h-16 rounded-full bg-gray-50 border ${isActive ? 'border-blue-500 border-2' : 'border-gray-100'} overflow-hidden flex items-center justify-center hover:border-blue-400 transition">
                             ${img ? `<img src="${img}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-tag text-gray-300 text-xl"></i>`}
                         </div>
-                        <span class="text-[11px] text-gray-600 text-center leading-tight">${c.label}</span>
+                        <span class="text-[11px] ${isActive ? 'text-blue-600 font-semibold' : 'text-gray-600'} text-center leading-tight">${c.label}</span>
                     </div>
                 `;
             }).join('');
@@ -706,6 +713,7 @@
             const d = document.getElementById('nav-search-input'); if (d) d.value = '';
             const m = document.getElementById('nav-search-input-mobile'); if (m) m.value = '';
             renderFilterBar();
+            renderCategoryCircles();
             renderProducts(applyActiveFilter());
         }
 
@@ -994,5 +1002,5 @@
             }
         }
     </script>
-</body> 
+</body>
 </html>
