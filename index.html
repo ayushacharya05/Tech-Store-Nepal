@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -113,8 +114,6 @@
                     <div id="bestsellers-row" class="flex overflow-x-auto gap-4 pb-2 no-scrollbar"></div>
                 </div>
             </div>
-
-            <h2 id="search-results-title" class="text-lg font-bold text-gray-900 mb-3 hidden"></h2>
 
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-3">
                 <div id="filter-bar" class="flex overflow-x-auto gap-2 pb-3 text-sm font-medium no-scrollbar flex-1"></div>
@@ -355,6 +354,26 @@
 
     <!-- ORDER CONFIRMATION MODAL -->
     <!-- CATEGORY POPUP MODAL -->
+    <!-- FULL-SCREEN SEARCH RESULTS -->
+    <div id="search-modal" class="fixed inset-0 bg-white hidden flex-col z-[75]">
+        <div class="border-b shrink-0">
+            <div class="max-w-[1800px] mx-auto px-4 md:px-8 py-4 flex items-center justify-between gap-3 flex-wrap">
+                <div class="flex items-center gap-3 min-w-0">
+                    <button onclick="clearSearchAndClose()" class="text-gray-400 hover:text-gray-700 text-xl shrink-0"><i class="fa-solid fa-arrow-left"></i></button>
+                    <h2 id="search-modal-title" class="text-base md:text-lg font-bold text-gray-900 truncate"></h2>
+                </div>
+                <select id="search-sort-select" onchange="handleSearchSortChange(this.value)" class="text-xs sm:text-sm border border-gray-200 bg-white rounded-lg px-3 py-2 outline-none font-medium text-gray-700 shrink-0">
+                    <option value="best">Sort: Best Match</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
+                    <option value="brand_asc">Brand: A to Z</option>
+                    <option value="rating_desc">Rating: High to Low</option>
+                </select>
+            </div>
+        </div>
+        <div id="search-modal-grid" class="flex-1 overflow-y-auto max-w-[1800px] mx-auto w-full px-4 md:px-8 py-5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3"></div>
+    </div>
+
     <div id="category-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-[70] p-3 md:p-6 backdrop-blur-sm">
         <div class="bg-white w-full max-w-[1400px] h-[92vh] md:h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
             <div class="flex items-center justify-between p-5 border-b shrink-0">
@@ -587,14 +606,6 @@
 
         function applyActiveFilter() {
             let list = activeCategory === 'all' ? products : products.filter(p => p.category === activeCategory);
-            if (searchQuery.trim()) {
-                const q = searchQuery.trim().toLowerCase();
-                list = list.filter(p =>
-                    (p.title || '').toLowerCase().includes(q) ||
-                    (p.brand || '').toLowerCase().includes(q) ||
-                    categoryLabel(p.category).toLowerCase().includes(q)
-                );
-            }
             list = [...list];
             if (sortOrder === 'price_asc') list.sort((a, b) => (a.price || 0) - (b.price || 0));
             else if (sortOrder === 'price_desc') list.sort((a, b) => (b.price || 0) - (a.price || 0));
@@ -608,28 +619,68 @@
             renderProducts(applyActiveFilter());
         }
 
+        let searchSortOrder = 'best';
+
+        function getSearchResults() {
+            const q = searchQuery.trim().toLowerCase();
+            let list = products.filter(p =>
+                (p.title || '').toLowerCase().includes(q) ||
+                (p.brand || '').toLowerCase().includes(q) ||
+                categoryLabel(p.category).toLowerCase().includes(q)
+            );
+            list = [...list];
+            if (searchSortOrder === 'price_asc') list.sort((a, b) => (a.price || 0) - (b.price || 0));
+            else if (searchSortOrder === 'price_desc') list.sort((a, b) => (b.price || 0) - (a.price || 0));
+            else if (searchSortOrder === 'brand_asc') list.sort((a, b) => (a.brand || '').localeCompare(b.brand || ''));
+            else if (searchSortOrder === 'rating_desc') list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+            return list;
+        }
+
+        function renderSearchModalResults() {
+            const list = getSearchResults();
+            document.getElementById('search-modal-title').innerText = `Search results for "${searchQuery.trim()}" (${list.length})`;
+            const grid = document.getElementById('search-modal-grid');
+            grid.innerHTML = list.length
+                ? list.map(p => productCardHtml(p)).join('')
+                : `<p class="col-span-full text-center text-sm text-gray-400 py-12">No products match your search.</p>`;
+        }
+
+        function handleSearchSortChange(value) {
+            searchSortOrder = value;
+            renderSearchModalResults();
+        }
+
+        function openSearchModal() {
+            const modal = document.getElementById('search-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            renderSearchModalResults();
+        }
+
+        function closeSearchModal() {
+            const modal = document.getElementById('search-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function clearSearchAndClose() {
+            searchQuery = '';
+            const d = document.getElementById('nav-search-input'); if (d) d.value = '';
+            const m = document.getElementById('nav-search-input-mobile'); if (m) m.value = '';
+            closeSearchModal();
+        }
+
         let searchDebounce = null;
         function handleSearchInput(value) {
             searchQuery = value;
             clearTimeout(searchDebounce);
             searchDebounce = setTimeout(() => {
-                backToStore();
-                updateSearchUI();
-                renderProducts(applyActiveFilter());
+                if (searchQuery.trim()) {
+                    openSearchModal();
+                } else {
+                    closeSearchModal();
+                }
             }, 200);
-        }
-
-        function updateSearchUI() {
-            const heroBlock = document.getElementById('home-hero-block');
-            const title = document.getElementById('search-results-title');
-            const isSearching = searchQuery.trim().length > 0;
-            heroBlock.classList.toggle('hidden', isSearching);
-            if (isSearching) {
-                title.classList.remove('hidden');
-                title.innerText = `Search results for "${searchQuery.trim()}"`;
-            } else {
-                title.classList.add('hidden');
-            }
         }
 
         function categoryLabel(key) {
@@ -757,7 +808,7 @@
             searchQuery = '';
             const d = document.getElementById('nav-search-input'); if (d) d.value = '';
             const m = document.getElementById('nav-search-input-mobile'); if (m) m.value = '';
-            updateSearchUI();
+            closeSearchModal();
             renderFilterBar();
             renderCategoryCircles();
             renderProducts(applyActiveFilter());
@@ -767,6 +818,7 @@
             const p = products.find(x => x.id === id);
             if (!p) return;
             closeCategoryModal();
+            closeSearchModal();
             currentProductId = id;
             detailQty = 1;
 
