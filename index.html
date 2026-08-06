@@ -23,8 +23,16 @@
 
             <div class="hidden md:flex flex-1 max-w-md mx-6">
                 <div class="relative w-full">
-                    <input id="nav-search-input" type="text" placeholder="Search products..." oninput="handleSearchInput(this.value)" onkeydown="if(event.key==='Enter'){this.blur()}" class="w-full border border-gray-200 bg-gray-50 rounded-full pl-10 pr-4 py-2 text-sm outline-none focus:border-blue-400 focus:bg-white">
+                    <input id="nav-search-input" type="text" placeholder="Search products..." autocomplete="off"
+                        oninput="handleSearchTyping(this.value, false)"
+                        onkeydown="if(event.key==='Enter'){submitSearch(this.value)}"
+                        onfocus="handleSearchTyping(this.value, false)"
+                        class="w-full border border-gray-200 bg-gray-50 rounded-full pl-10 pr-11 py-2 text-sm outline-none focus:border-blue-400 focus:bg-white">
                     <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                    <button onclick="submitSearch(document.getElementById('nav-search-input').value)" class="absolute right-1.5 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white w-8 h-8 rounded-full flex items-center justify-center">
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                    <div id="nav-search-suggestions" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50"></div>
                 </div>
             </div>
 
@@ -42,8 +50,16 @@
         </div>
         <div class="md:hidden px-4 pb-3">
             <div class="relative w-full">
-                <input id="nav-search-input-mobile" type="text" placeholder="Search products..." oninput="handleSearchInput(this.value)" onkeydown="if(event.key==='Enter'){this.blur()}" class="w-full border border-gray-200 bg-gray-50 rounded-full pl-10 pr-4 py-2 text-sm outline-none focus:border-blue-400 focus:bg-white">
+                <input id="nav-search-input-mobile" type="text" placeholder="Search products..." autocomplete="off"
+                    oninput="handleSearchTyping(this.value, true)"
+                    onkeydown="if(event.key==='Enter'){submitSearch(this.value)}"
+                    onfocus="handleSearchTyping(this.value, true)"
+                    class="w-full border border-gray-200 bg-gray-50 rounded-full pl-10 pr-11 py-2 text-sm outline-none focus:border-blue-400 focus:bg-white">
                 <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                <button onclick="submitSearch(document.getElementById('nav-search-input-mobile').value)" class="absolute right-1.5 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white w-8 h-8 rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                </button>
+                <div id="nav-search-suggestions-mobile" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50"></div>
             </div>
         </div>
     </nav>
@@ -359,7 +375,7 @@
         <div class="border-b shrink-0">
             <div class="max-w-[1800px] mx-auto px-4 md:px-8 py-4 flex items-center justify-between gap-3 flex-wrap">
                 <div class="flex items-center gap-3 min-w-0">
-                    <button onclick="clearSearchAndClose()" class="text-gray-400 hover:text-gray-700 text-xl shrink-0"><i class="fa-solid fa-arrow-left"></i></button>
+                    <button onclick="history.back()" class="text-gray-400 hover:text-gray-700 text-xl shrink-0"><i class="fa-solid fa-arrow-left"></i></button>
                     <h2 id="search-modal-title" class="text-base md:text-lg font-bold text-gray-900 truncate"></h2>
                 </div>
                 <select id="search-sort-select" onchange="handleSearchSortChange(this.value)" class="text-xs sm:text-sm border border-gray-200 bg-white rounded-lg px-3 py-2 outline-none font-medium text-gray-700 shrink-0">
@@ -650,11 +666,12 @@
             renderSearchModalResults();
         }
 
-        function openSearchModal() {
+        function openSearchModal(fromPop) {
             const modal = document.getElementById('search-modal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             renderSearchModalResults();
+            if (!fromPop) history.pushState({ view: 'search', q: searchQuery }, '');
         }
 
         function closeSearchModal() {
@@ -670,18 +687,50 @@
             closeSearchModal();
         }
 
-        let searchDebounce = null;
-        function handleSearchInput(value) {
-            searchQuery = value;
-            clearTimeout(searchDebounce);
-            searchDebounce = setTimeout(() => {
-                if (searchQuery.trim()) {
-                    openSearchModal();
-                } else {
-                    closeSearchModal();
-                }
-            }, 200);
+        function submitSearch(value) {
+            const v = (value || '').trim();
+            if (!v) return;
+            searchQuery = v;
+            const d = document.getElementById('nav-search-input'); if (d) d.value = v;
+            const m = document.getElementById('nav-search-input-mobile'); if (m) m.value = v;
+            hideSuggestions(false);
+            hideSuggestions(true);
+            document.activeElement.blur();
+            openSearchModal();
         }
+
+        function hideSuggestions(isMobile) {
+            const box = document.getElementById(isMobile ? 'nav-search-suggestions-mobile' : 'nav-search-suggestions');
+            box.classList.add('hidden');
+        }
+
+        function handleSearchTyping(value, isMobile) {
+            const box = document.getElementById(isMobile ? 'nav-search-suggestions-mobile' : 'nav-search-suggestions');
+            const q = value.trim().toLowerCase();
+            if (!q) { box.classList.add('hidden'); return; }
+            const matches = products.filter(p => (p.title || '').toLowerCase().includes(q)).slice(0, 8);
+            if (!matches.length) { box.classList.add('hidden'); return; }
+            box.innerHTML = matches.map(p => `
+                <div onmousedown="selectSuggestion('${p.id}', ${isMobile})" class="flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-0">
+                    <img src="${p.image}" class="w-9 h-9 rounded object-cover shrink-0 bg-gray-50">
+                    <span class="text-xs text-gray-700 line-clamp-1">${p.title}</span>
+                </div>
+            `).join('');
+            box.classList.remove('hidden');
+        }
+
+        function selectSuggestion(productId, isMobile) {
+            hideSuggestions(true);
+            hideSuggestions(false);
+            const inp = document.getElementById(isMobile ? 'nav-search-input-mobile' : 'nav-search-input');
+            if (inp) inp.value = '';
+            viewProduct(productId);
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#nav-search-suggestions') && !e.target.closest('#nav-search-input')) hideSuggestions(false);
+            if (!e.target.closest('#nav-search-suggestions-mobile') && !e.target.closest('#nav-search-input-mobile')) hideSuggestions(true);
+        });
 
         function categoryLabel(key) {
             const c = categories.find(x => x.key === key);
@@ -874,14 +923,22 @@
             const state = e.state;
             if (state && state.view === 'detail' && state.id) {
                 closeCategoryModal();
+                closeSearchModal();
                 viewProduct(state.id, true);
             } else if (state && state.view === 'orders') {
                 closeCategoryModal();
+                closeSearchModal();
                 openUserOrdersView(true);
             } else if (state && state.view === 'category' && state.key) {
+                closeSearchModal();
                 selectCategoryFromCircle(state.key, true);
+            } else if (state && state.view === 'search' && state.q) {
+                closeCategoryModal();
+                searchQuery = state.q;
+                openSearchModal(true);
             } else {
                 closeCategoryModal();
+                closeSearchModal();
                 backToStore();
             }
         });
